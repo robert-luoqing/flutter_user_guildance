@@ -11,6 +11,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   UserGuidanceController userGuidanceController = UserGuidanceController();
+  var tabs = ["Tab1", "Tab2", "Tab3"];
+
   @override
   void dispose() {
     userGuidanceController.dispose();
@@ -18,12 +20,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
     return UserGuidance(
       controller: userGuidanceController,
       slotBuilder: (context, data) {
-        if (data?.index == 3) {
+        if (data?.index == 1) {
           return BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(30),
@@ -32,7 +33,7 @@ class _HomePageState extends State<HomePage> {
         return null;
       },
       tipBuilder: (context, data) {
-        if (data?.index == 3) {
+        if (data?.index == 1) {
           return Stack(children: [
             Positioned(
               left: (data?.position.dx ?? 0) - 120,
@@ -40,7 +41,7 @@ class _HomePageState extends State<HomePage> {
               child: Container(
                   color: Colors.red,
                   child: const Text(
-                    "Please follow the guildance",
+                    "This is float button",
                   )),
             )
           ]);
@@ -48,10 +49,10 @@ class _HomePageState extends State<HomePage> {
         return null;
       },
       child: DefaultTabController(
-          length: 2,
+          length: tabs.length,
           child: Scaffold(
             floatingActionButton: UserGuildanceAnchor(
-                index: 3,
+                index: 1,
                 child: FloatingActionButton(
                   onPressed: () {
                     userGuidanceController.show();
@@ -61,27 +62,22 @@ class _HomePageState extends State<HomePage> {
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Column(children: [
-                  const TabBar(tabs: [
-                    Tab(
+                  TabBar(
+                      tabs: tabs.map<Widget>((txt) {
+                    var subIndex = tabs.indexOf(txt);
+                    return Tab(
                         child: UserGuildanceAnchor(
-                            index: 1,
+                            index: 0,
+                            subIndex: subIndex,
                             reportType: AnchorReportParentType.tab,
                             child: Text(
-                              "Tab1",
-                              style: TextStyle(color: Colors.black),
-                            ))),
-                    Tab(
-                        child: UserGuildanceAnchor(
-                            index: 2,
-                            reportType: AnchorReportParentType.tab,
-                            child: Text(
-                              "Tab2",
-                              style: TextStyle(color: Colors.black),
-                            )))
-                  ]),
+                              txt,
+                              style: const TextStyle(color: Colors.black),
+                            )));
+                  }).toList()),
                   Expanded(
                       child: TabBarView(
-                    children: [Container(), Container()],
+                    children: tabs.map<Widget>((txt) => Container()).toList(),
                   ))
                 ]),
               ),
