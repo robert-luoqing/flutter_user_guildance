@@ -6,6 +6,8 @@ import 'user_guildance_anchor_inherit.dart';
 
 enum AnchorReportParentType { tab }
 
+typedef AnchorAdjustRect = Rect Function(Rect);
+
 class UserGuildanceAnchor extends SingleChildRenderObjectWidget {
   const UserGuildanceAnchor(
       {Key? key,
@@ -13,6 +15,7 @@ class UserGuildanceAnchor extends SingleChildRenderObjectWidget {
       required this.index,
       this.subIndex,
       this.reportType,
+      this.adjustRect,
       this.tag})
       : super(key: key, child: child);
 
@@ -21,6 +24,8 @@ class UserGuildanceAnchor extends SingleChildRenderObjectWidget {
   final AnchorReportParentType? reportType;
   final dynamic tag;
 
+  final AnchorAdjustRect? adjustRect;
+
   @override
   RenderObject createRenderObject(BuildContext context) {
     var renderObj = _AnchorRenderObject(
@@ -28,6 +33,7 @@ class UserGuildanceAnchor extends SingleChildRenderObjectWidget {
         index: index,
         subIndex: subIndex,
         reportType: reportType,
+        adjustRect: adjustRect,
         tag: tag);
     return renderObj;
   }
@@ -42,6 +48,7 @@ class UserGuildanceAnchor extends SingleChildRenderObjectWidget {
     _anchorRenderObject.subIndex = subIndex;
     _anchorRenderObject.tag = tag;
     _anchorRenderObject.reportType = reportType;
+    _anchorRenderObject.adjustRect = adjustRect;
     super.updateRenderObject(context, renderObject);
   }
 }
@@ -53,6 +60,7 @@ class _AnchorRenderObject extends RenderShiftedBox {
       required this.index,
       this.subIndex,
       this.reportType,
+      this.adjustRect,
       this.tag})
       : super(child);
 
@@ -61,9 +69,15 @@ class _AnchorRenderObject extends RenderShiftedBox {
   int? subIndex;
   AnchorReportParentType? reportType;
   dynamic tag;
+  AnchorAdjustRect? adjustRect;
 
   void reportPosition(Offset point, Size size, dynamic tag) {
-    UserGuildanceAnchorInherit.of(context)?.report(index, subIndex, point, size, tag);
+    var position = Rect.fromLTWH(point.dx, point.dy, size.width, size.height);
+    if (adjustRect != null) {
+      position = adjustRect!(position);
+    }
+    UserGuildanceAnchorInherit.of(context)
+        ?.report(index, subIndex, position, tag);
   }
 
   @override

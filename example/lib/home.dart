@@ -23,29 +23,26 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return UserGuidance(
       controller: userGuidanceController,
+      opacity: 0.5,
       slotBuilder: (context, data) {
         if (data?.index == 1) {
           return BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(data!.position.height / 2.0),
           );
         }
         return null;
       },
       tipBuilder: (context, data) {
-        if (data?.index == 1) {
-          return Stack(children: [
-            Positioned(
-              left: (data?.position.dx ?? 0) - 120,
-              top: (data?.position.dy ?? 0) - 30,
-              child: Container(
-                  color: Colors.red,
-                  child: const Text(
-                    "This is float button",
-                  )),
-            )
-          ]);
+        if (data != null) {
+          return TipWidget(
+            child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 250.0),
+                child: Text("${data.tag}")),
+            data: data,
+          );
         }
+
         return null;
       },
       child: DefaultTabController(
@@ -53,6 +50,8 @@ class _HomePageState extends State<HomePage> {
           child: Scaffold(
             floatingActionButton: UserGuildanceAnchor(
                 index: 1,
+                tag:
+                    "This is tab Floating button. Click it to open new page. It should be friendly to the end user",
                 child: FloatingActionButton(
                   onPressed: () {
                     userGuidanceController.show();
@@ -70,11 +69,22 @@ class _HomePageState extends State<HomePage> {
                             index: 0,
                             subIndex: subIndex,
                             reportType: AnchorReportParentType.tab,
+                            tag: "This is tab $txt",
                             child: Text(
                               txt,
                               style: const TextStyle(color: Colors.black),
                             )));
                   }).toList()),
+                  UserGuildanceAnchor(
+                    index: 2,
+                    tag: "Start press the button",
+                    adjustRect: (rect) {
+                      return Rect.fromLTWH(rect.left, rect.top + 5.0,
+                          rect.width, rect.height - 10.0);
+                    },
+                    child: ElevatedButton(
+                        onPressed: () {}, child: const Text("Button")),
+                  ),
                   Expanded(
                       child: TabBarView(
                     children: tabs.map<Widget>((txt) => Container()).toList(),

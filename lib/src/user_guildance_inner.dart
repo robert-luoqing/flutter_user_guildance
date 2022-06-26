@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../flutter_user_guildance.dart';
 import 'user_guildance_anchor_inherit.dart';
 import 'user_guildance_controller.dart';
 import 'user_guildance_model.dart';
@@ -15,13 +16,16 @@ class UserGuidanceInner extends StatefulWidget {
       required this.controller,
       this.duration = const Duration(milliseconds: 250),
       this.tipBuilder,
-      this.slotBuilder})
+      this.slotBuilder,
+      this.opacity = 0.4})
       : super(key: key);
 
   final UserGuidanceController controller;
   final Duration duration;
   final UserGuildanceTipBuilder? tipBuilder;
   final UserGuildanceDecorationBuilder? slotBuilder;
+
+  final double opacity;
 
   @override
   _UserGuidanceInnerState createState() => _UserGuidanceInnerState();
@@ -44,6 +48,19 @@ class _UserGuidanceInnerState extends State<UserGuidanceInner> {
     }
 
     super.didUpdateWidget(oldWidget);
+  }
+
+  Widget? getDefaultTipWidget(context, data) {
+    if (data != null) {
+      return TipWidget(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 300),
+          child: Text("${data.tag}")),
+        data: data,
+      );
+    }
+
+    return null;
   }
 
   @override
@@ -70,8 +87,8 @@ class _UserGuidanceInnerState extends State<UserGuidanceInner> {
           children: [
             Positioned.fill(
               child: ColorFiltered(
-                colorFilter: const ColorFilter.mode(
-                  Colors.black87,
+                colorFilter: ColorFilter.mode(
+                  Color.fromARGB((widget.opacity * 255.0).toInt(), 0, 0, 0),
                   BlendMode.srcOut,
                 ),
                 child: Stack(
@@ -89,10 +106,10 @@ class _UserGuidanceInnerState extends State<UserGuidanceInner> {
                       builder: (context, value, child) {
                         final anchorData = value.data;
                         var rect = Rect.fromLTWH(
-                            anchorData?.position.dx ?? 0,
-                            anchorData?.position.dy ?? 0,
-                            anchorData?.size.width ?? 0,
-                            anchorData?.size.height ?? 0);
+                            anchorData?.position.left ?? 0,
+                            anchorData?.position.top ?? 0,
+                            anchorData?.position.width ?? 0,
+                            anchorData?.position.height ?? 0);
                         Decoration? decoration;
                         if (widget.slotBuilder != null) {
                           decoration = widget.slotBuilder!(context, anchorData);
@@ -122,6 +139,10 @@ class _UserGuidanceInnerState extends State<UserGuidanceInner> {
                   Widget? tipWidget;
                   if (widget.tipBuilder != null) {
                     tipWidget = widget.tipBuilder!(context, anchorData);
+                  } else {
+                    if (anchorData?.tag != null) {
+                      tipWidget = getDefaultTipWidget(context, anchorData);
+                    }
                   }
 
                   tipWidget ??= Container();

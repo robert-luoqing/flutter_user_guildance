@@ -12,6 +12,7 @@ class UserGuidance extends StatefulWidget {
     this.duration = const Duration(milliseconds: 250),
     this.tipBuilder,
     this.slotBuilder,
+    this.opacity = 0.4,
   }) : super(key: key);
 
   final UserGuidanceController controller;
@@ -19,6 +20,7 @@ class UserGuidance extends StatefulWidget {
   final UserGuildanceTipBuilder? tipBuilder;
   final UserGuildanceDecorationBuilder? slotBuilder;
   final Widget child;
+  final double opacity;
 
   @override
   _UserGuidanceState createState() => _UserGuidanceState();
@@ -34,7 +36,8 @@ class _UserGuidanceState extends State<UserGuidance> {
           controller: widget.controller,
           duration: widget.duration,
           tipBuilder: widget.tipBuilder,
-          slotBuilder: widget.slotBuilder,)
+          slotBuilder: widget.slotBuilder,
+          opacity: widget.opacity,)
     ]));
   }
 }

@@ -2,15 +2,10 @@ import 'package:flutter/material.dart';
 
 class AnchorData {
   AnchorData(
-      {required this.index,
-      required this.position,
-      required this.size,
-      this.subIndex,
-      this.tag});
+      {required this.index, required this.position, this.subIndex, this.tag});
   int index;
   int? subIndex;
-  Offset position;
-  Size size;
+  Rect position;
   dynamic tag;
 }
 
@@ -24,7 +19,8 @@ class UserGuildanceAnchorInherit extends InheritedWidget {
 
   //定义一个便捷方法，方便子树中的widget获取共享数据
   static UserGuildanceAnchorInherit? of(BuildContext context) {
-    var instance = context.dependOnInheritedWidgetOfExactType<UserGuildanceAnchorInherit>();
+    var instance = context
+        .dependOnInheritedWidgetOfExactType<UserGuildanceAnchorInherit>();
     return instance;
   }
 
@@ -34,17 +30,15 @@ class UserGuildanceAnchorInherit extends InheritedWidget {
     return false;
   }
 
-  void report(
-      int index, int? subIndex, Offset position, Size size, dynamic tag) {
+  void report(int index, int? subIndex, Rect position, dynamic tag) {
     var matched = false;
     for (var item in data) {
       if (item.index == index && item.subIndex == subIndex) {
-        if (item.position.dx != position.dx &&
-            item.position.dy != position.dy &&
-            item.size.width != size.width &&
-            item.size.height != size.height) {
+        if (item.position.top != position.top &&
+            item.position.left != position.left &&
+            item.position.width != position.width &&
+            item.position.height != position.height) {
           item.position = position;
-          item.size = size;
         }
         matched = true;
         break;
@@ -53,11 +47,7 @@ class UserGuildanceAnchorInherit extends InheritedWidget {
 
     if (!matched) {
       data.add(AnchorData(
-          index: index,
-          subIndex: subIndex,
-          position: position,
-          size: size,
-          tag: tag));
+          index: index, subIndex: subIndex, position: position, tag: tag));
     }
   }
 
