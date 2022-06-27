@@ -12,17 +12,19 @@ class UserGuildanceAnchor extends SingleChildRenderObjectWidget {
   const UserGuildanceAnchor(
       {Key? key,
       required Widget child,
-      required this.index,
-      this.subIndex,
+      required this.step,
+      this.subStep,
       this.reportType,
       this.adjustRect,
-      this.tag})
+      this.tag,
+      this.group = 0})
       : super(key: key, child: child);
 
-  final int index;
-  final int? subIndex;
+  final int step;
+  final int? subStep;
   final AnchorReportParentType? reportType;
   final dynamic tag;
+  final int group;
 
   final AnchorAdjustRect? adjustRect;
 
@@ -30,11 +32,12 @@ class UserGuildanceAnchor extends SingleChildRenderObjectWidget {
   RenderObject createRenderObject(BuildContext context) {
     var renderObj = _AnchorRenderObject(
         context: context,
-        index: index,
-        subIndex: subIndex,
+        step: step,
+        subStep: subStep,
         reportType: reportType,
         adjustRect: adjustRect,
-        tag: tag);
+        tag: tag,
+        group: group);
     return renderObj;
   }
 
@@ -44,11 +47,12 @@ class UserGuildanceAnchor extends SingleChildRenderObjectWidget {
     _AnchorRenderObject _anchorRenderObject =
         renderObject as _AnchorRenderObject;
     _anchorRenderObject.context = context;
-    _anchorRenderObject.index = index;
-    _anchorRenderObject.subIndex = subIndex;
+    _anchorRenderObject.step = step;
+    _anchorRenderObject.subStep = subStep;
     _anchorRenderObject.tag = tag;
     _anchorRenderObject.reportType = reportType;
     _anchorRenderObject.adjustRect = adjustRect;
+    _anchorRenderObject.group = group;
     super.updateRenderObject(context, renderObject);
   }
 }
@@ -57,19 +61,21 @@ class _AnchorRenderObject extends RenderShiftedBox {
   _AnchorRenderObject(
       {required this.context,
       RenderBox? child,
-      required this.index,
-      this.subIndex,
+      required this.step,
+      this.subStep,
       this.reportType,
       this.adjustRect,
+      required this.group,
       this.tag})
       : super(child);
 
   BuildContext context;
-  int index;
-  int? subIndex;
+  int step;
+  int? subStep;
   AnchorReportParentType? reportType;
   dynamic tag;
   AnchorAdjustRect? adjustRect;
+  int group;
 
   void reportPosition(Offset point, Size size, dynamic tag) {
     var position = Rect.fromLTWH(point.dx, point.dy, size.width, size.height);
@@ -77,7 +83,7 @@ class _AnchorRenderObject extends RenderShiftedBox {
       position = adjustRect!(position);
     }
     UserGuildanceAnchorInherit.of(context)
-        ?.report(index, subIndex, position, tag);
+        ?.report(group, step, subStep, position, tag);
   }
 
   @override
@@ -124,7 +130,7 @@ class _AnchorRenderObject extends RenderShiftedBox {
 
   @override
   void dispose() {
-    UserGuildanceAnchorInherit.of(context)?.remove(index, subIndex);
+    UserGuildanceAnchorInherit.of(context)?.remove(step, subStep);
     super.dispose();
   }
 }

@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../flutter_user_guildance.dart';
-import 'user_guildance_anchor_inherit.dart';
-import 'user_guildance_controller.dart';
-import 'user_guildance_model.dart';
 
 typedef UserGuildanceTipBuilder = Widget? Function(
     BuildContext context, AnchorData? data);
@@ -54,8 +51,8 @@ class _UserGuidanceInnerState extends State<UserGuidanceInner> {
     if (data != null) {
       return TipWidget(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 300),
-          child: Text("${data.tag}")),
+            constraints: const BoxConstraints(maxWidth: 300),
+            child: Text("${data.tag}")),
         data: data,
       );
     }
@@ -151,7 +148,7 @@ class _UserGuidanceInnerState extends State<UserGuidanceInner> {
                     duration: widget.duration,
                     child: SizedBox(
                       key: ValueKey(
-                          "${value.data?.index}-${value.data?.subIndex}"),
+                          "${value.data?.step}-${value.data?.subStep}"),
                       child: tipWidget,
                     ),
                   );

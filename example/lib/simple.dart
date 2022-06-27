@@ -19,7 +19,7 @@ class _SimplePageState extends State<SimplePage> {
       opacity: 0.5,
       child: Scaffold(
         floatingActionButton: UserGuildanceAnchor(
-            index: 1,
+            step: 1,
             tag: "This is tab Floating button.",
             child: FloatingActionButton(
               onPressed: () {
@@ -30,7 +30,7 @@ class _SimplePageState extends State<SimplePage> {
           child: Padding(
             padding: const EdgeInsets.all(40.0),
             child: UserGuildanceAnchor(
-              index: 2,
+              step: 2,
               tag: "Start press the button",
               child:
                   ElevatedButton(onPressed: () {}, child: const Text("Button")),

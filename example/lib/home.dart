@@ -25,7 +25,7 @@ class _HomePageState extends State<HomePage> {
       controller: userGuidanceController,
       opacity: 0.5,
       slotBuilder: (context, data) {
-        if (data?.index == 1) {
+        if (data?.step == 1) {
           return BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(data!.position.height / 2.0),
@@ -49,7 +49,8 @@ class _HomePageState extends State<HomePage> {
           length: tabs.length,
           child: Scaffold(
             floatingActionButton: UserGuildanceAnchor(
-                index: 1,
+                group: 1,
+                step: 1,
                 tag:
                     "This is tab Floating button. Click it to open new page. It should be friendly to the end user",
                 child: FloatingActionButton(
@@ -63,11 +64,11 @@ class _HomePageState extends State<HomePage> {
                 child: Column(children: [
                   TabBar(
                       tabs: tabs.map<Widget>((txt) {
-                    var subIndex = tabs.indexOf(txt);
+                    var subStep = tabs.indexOf(txt);
                     return Tab(
                         child: UserGuildanceAnchor(
-                            index: 0,
-                            subIndex: subIndex,
+                            step: 0,
+                            subStep: subStep,
                             reportType: AnchorReportParentType.tab,
                             tag: "This is tab $txt",
                             child: Text(
@@ -76,14 +77,18 @@ class _HomePageState extends State<HomePage> {
                             )));
                   }).toList()),
                   UserGuildanceAnchor(
-                    index: 2,
+                    group: 1,
+                    step: 2,
                     tag: "Start press the button",
                     adjustRect: (rect) {
                       return Rect.fromLTWH(rect.left, rect.top + 5.0,
                           rect.width, rect.height - 10.0);
                     },
                     child: ElevatedButton(
-                        onPressed: () {}, child: const Text("Button")),
+                        onPressed: () {
+                          userGuidanceController.show(group: 1);
+                        },
+                        child: const Text("Button")),
                   ),
                   Expanded(
                       child: TabBarView(

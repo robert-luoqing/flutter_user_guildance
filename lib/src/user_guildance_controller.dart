@@ -8,81 +8,9 @@ class UserGuidanceController extends ValueNotifier<UserGuildanceModel> {
 
   BuildContext? _context;
 
-  void show({int index = 0, int subIndex = 0}) {
-    var data = _getInitData(index, subIndex);
+  void show({int group = 0, int index = 0, int subIndex = 0}) {
+    var data = _getInitData(group, index, subIndex);
     value = UserGuildanceModel.custom(visible: data != null, anchorData: data);
-  }
-
-  /// return: 0: equal, 1: above, -1: less
-  int compair(int index, int subIndex, int compairIndex, int compairSubIndex) {
-    if (index > compairIndex) {
-      return 1;
-    } else if (index == compairIndex) {
-      if (subIndex > compairSubIndex) {
-        return 1;
-      } else if (subIndex == compairSubIndex) {
-        return 0;
-      }
-    }
-
-    return -1;
-  }
-
-  AnchorData? _getInitData(int index, int subIndex) {
-    AnchorData? minItem;
-    if (_context != null) {
-      var data = UserGuildanceAnchorInherit.of(_context!)?.data;
-      if (data != null) {
-        for (var item in data) {
-          var compairResult =
-              compair(item.index, item.subIndex ?? 0, index, subIndex);
-          if (compairResult != -1) {
-            if (minItem == null) {
-              minItem = item;
-            } else {
-              compairResult = compair(item.index, item.subIndex ?? 0,
-                  minItem.index, minItem.subIndex ?? 0);
-              if (compairResult != 1) {
-                minItem = item;
-              }
-            }
-          }
-        }
-      }
-    }
-
-    return minItem;
-  }
-
-  AnchorData? _getNextData() {
-    var curData = value.data;
-    if (curData == null) {
-      return _getInitData(0, 0);
-    } else {
-      AnchorData? minItem;
-      if (_context != null) {
-        var data = UserGuildanceAnchorInherit.of(_context!)?.data;
-        if (data != null) {
-          for (var item in data) {
-            var compairResult = compair(item.index, item.subIndex ?? 0,
-                curData.index, curData.subIndex ?? 0);
-            if (compairResult == 1) {
-              if (minItem == null) {
-                minItem = item;
-              } else {
-                compairResult = compair(item.index, item.subIndex ?? 0,
-                    minItem.index, minItem.subIndex ?? 0);
-                if (compairResult == -1) {
-                  minItem = item;
-                }
-              }
-            }
-          }
-        }
-      }
-
-      return minItem;
-    }
   }
 
   void next() {
@@ -100,5 +28,81 @@ class UserGuidanceController extends ValueNotifier<UserGuildanceModel> {
 
   void detach() {
     _context = null;
+  }
+
+  /// return: 0: equal, 1: above, -1: less
+  int compair(int step, int subStep, int compairStep, int compairSubStep) {
+    if (step > compairStep) {
+      return 1;
+    } else if (step == compairStep) {
+      if (subStep > compairSubStep) {
+        return 1;
+      } else if (subStep == compairSubStep) {
+        return 0;
+      }
+    }
+
+    return -1;
+  }
+
+  AnchorData? _getInitData(int group, int step, int subStep) {
+    AnchorData? minItem;
+    if (_context != null) {
+      var data = UserGuildanceAnchorInherit.of(_context!)?.data;
+      if (data != null) {
+        for (var item in data) {
+          if (item.group == group) {
+            var compairResult =
+                compair(item.step, item.subStep ?? 0, step, subStep);
+            if (compairResult != -1) {
+              if (minItem == null) {
+                minItem = item;
+              } else {
+                compairResult = compair(item.step, item.subStep ?? 0,
+                    minItem.step, minItem.subStep ?? 0);
+                if (compairResult != 1) {
+                  minItem = item;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return minItem;
+  }
+
+  AnchorData? _getNextData() {
+    var curData = value.data;
+    if (curData == null) {
+      throw "Not start";
+    } else {
+      AnchorData? minItem;
+      if (_context != null) {
+        var data = UserGuildanceAnchorInherit.of(_context!)?.data;
+        if (data != null) {
+          for (var item in data) {
+            if (curData.group == item.group) {
+              var compairResult = compair(item.step, item.subStep ?? 0,
+                  curData.step, curData.subStep ?? 0);
+              if (compairResult == 1) {
+                if (minItem == null) {
+                  minItem = item;
+                } else {
+                  compairResult = compair(item.step, item.subStep ?? 0,
+                      minItem.step, minItem.subStep ?? 0);
+                  if (compairResult == -1) {
+                    minItem = item;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      return minItem;
+    }
   }
 }

@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 
 class AnchorData {
   AnchorData(
-      {required this.index, required this.position, this.subIndex, this.tag});
-  int index;
-  int? subIndex;
+      {required this.group,
+      required this.step,
+      required this.position,
+      this.subStep,
+      this.tag});
+  int group;
+  int step;
+  int? subStep;
   Rect position;
   dynamic tag;
 }
@@ -30,10 +35,10 @@ class UserGuildanceAnchorInherit extends InheritedWidget {
     return false;
   }
 
-  void report(int index, int? subIndex, Rect position, dynamic tag) {
+  void report(int group, int step, int? subStep, Rect position, dynamic tag) {
     var matched = false;
     for (var item in data) {
-      if (item.index == index && item.subIndex == subIndex) {
+      if (item.step == step && item.subStep == subStep && item.group == group) {
         if (item.position.top != position.top &&
             item.position.left != position.left &&
             item.position.width != position.width &&
@@ -47,15 +52,19 @@ class UserGuildanceAnchorInherit extends InheritedWidget {
 
     if (!matched) {
       data.add(AnchorData(
-          index: index, subIndex: subIndex, position: position, tag: tag));
+          group: group,
+          step: step,
+          subStep: subStep,
+          position: position,
+          tag: tag));
     }
   }
 
-  void remove(int index, int? subIndex) {
+  void remove(int step, int? subStep) {
     var length = data.length;
     for (var i = length - 1; i >= 0; i--) {
       var item = data[i];
-      if (item.index == index && item.subIndex == subIndex) {
+      if (item.step == step && item.subStep == subStep) {
         data.removeAt(i);
         break;
       }
