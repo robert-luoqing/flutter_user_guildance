@@ -14,6 +14,8 @@ class AnchorData {
   dynamic tag;
 }
 
+typedef PositoinChangeHandler = void Function();
+
 class UserGuildanceAnchorInherit extends InheritedWidget {
   UserGuildanceAnchorInherit({
     Key? key,
@@ -21,6 +23,7 @@ class UserGuildanceAnchorInherit extends InheritedWidget {
   }) : super(key: key, child: child);
 
   final List<AnchorData> data = []; //需要在子树中共享的数据，保存点击次数
+  final _positionHandlers = <PositoinChangeHandler>[];
 
   //定义一个便捷方法，方便子树中的widget获取共享数据
   static UserGuildanceAnchorInherit? of(BuildContext context) {
@@ -35,6 +38,24 @@ class UserGuildanceAnchorInherit extends InheritedWidget {
     return false;
   }
 
+  void addPositionListener(PositoinChangeHandler callback) {
+    if (!_positionHandlers.contains(callback)) {
+      _positionHandlers.add(callback);
+    }
+  }
+
+  void removePositionListener(PositoinChangeHandler callback) {
+    if (_positionHandlers.contains(callback)) {
+      _positionHandlers.remove(callback);
+    }
+  }
+
+  void _notifyPositoinChanged() {
+    for (var item in _positionHandlers) {
+      item();
+    }
+  }
+
   void report(int group, int step, int? subStep, Rect position, dynamic tag) {
     var matched = false;
     for (var item in data) {
@@ -44,6 +65,7 @@ class UserGuildanceAnchorInherit extends InheritedWidget {
             item.position.width != position.width &&
             item.position.height != position.height) {
           item.position = position;
+          _notifyPositoinChanged();
         }
         matched = true;
         break;
@@ -57,6 +79,7 @@ class UserGuildanceAnchorInherit extends InheritedWidget {
           subStep: subStep,
           position: position,
           tag: tag));
+      _notifyPositoinChanged();
     }
   }
 
