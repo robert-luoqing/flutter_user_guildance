@@ -1,18 +1,15 @@
 import 'user_guildance_anchor_inherit.dart';
 
 class UserGuildanceModel {
-  const UserGuildanceModel._([
-    this.visible = false,
+  UserGuildanceModel({
+    required this.visible,
     this.data,
-  ]);
+    this.currentPage,
+  });
 
-  const UserGuildanceModel.initial() : this._();
+  bool visible;
+  AnchorData? data;
 
-  const UserGuildanceModel.custom({
-    required bool visible,
-    AnchorData? anchorData,
-  }) : this._(visible, anchorData);
-
-  final bool visible;
-  final AnchorData? data;
+  /// Only currrent page equal anchorPageConditions, the group will be show up
+  String? currentPage;
 }

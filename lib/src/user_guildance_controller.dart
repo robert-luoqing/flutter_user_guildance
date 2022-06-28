@@ -4,22 +4,35 @@ import 'user_guildance_anchor_inherit.dart';
 import 'user_guildance_model.dart';
 
 class UserGuidanceController extends ValueNotifier<UserGuildanceModel> {
-  UserGuidanceController() : super(const UserGuildanceModel.initial());
+  UserGuidanceController() : super(UserGuildanceModel(visible: false));
 
   BuildContext? _context;
 
+  set currentPage(String? page) {
+    if (value.currentPage != page) {
+      value.currentPage = page;
+      notifyListeners();
+    }
+  }
+
   void show({int group = 0, int index = 0, int subIndex = 0}) {
     var data = _getInitData(group, index, subIndex);
-    value = UserGuildanceModel.custom(visible: data != null, anchorData: data);
+    value.visible = data != null;
+    value.data = data;
+    notifyListeners();
   }
 
   void next() {
     var data = _getNextData();
-    value = UserGuildanceModel.custom(visible: data != null, anchorData: data);
+    value.visible = data != null;
+    value.data = data;
+    notifyListeners();
   }
 
   void hide() {
-    value = const UserGuildanceModel.custom(visible: false, anchorData: null);
+    value.visible = false;
+    value.data = null;
+    notifyListeners();
   }
 
   void attach(BuildContext context) {

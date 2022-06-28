@@ -15,6 +15,7 @@ class UserGuidance extends StatefulWidget {
     this.opacity = 0.4,
     this.anchorAppearConditions,
     this.anchorPositionConditions,
+    this.anchorPageConditions,
     this.showMaskWhenMissCondition = true,
     this.moveNextOnTap = true,
   }) : super(key: key);
@@ -37,6 +38,7 @@ class UserGuidance extends StatefulWidget {
   /// The user guildance will appear when the group condition meet
   final Map<int, List<int>>? anchorAppearConditions;
   final Map<int, List<UserGuidancePositionCondition>>? anchorPositionConditions;
+  final Map<int, String>? anchorPageConditions;
   final bool showMaskWhenMissCondition;
 
   @override

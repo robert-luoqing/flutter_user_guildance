@@ -3,6 +3,11 @@ import 'package:flutter/material.dart';
 import '../flutter_user_guildance.dart';
 import 'measure_size.dart';
 
+enum TipWidgetAlign {
+  leftRight,
+  topBottom,
+}
+
 class TipWidget extends StatefulWidget {
   const TipWidget({
     Key? key,
@@ -14,8 +19,9 @@ class TipWidget extends StatefulWidget {
     this.topRightRadius = const Radius.circular(4.0),
     this.bottomLeftRadius = const Radius.circular(4.0),
     this.bottomRightRadius = const Radius.circular(4.0),
-    this.clipPadding = const EdgeInsets.all(0),
-    this.decoration,
+    this.ignoreArrowHeight = true,
+    this.decoration = const BoxDecoration(color: Colors.white),
+    this.tipWidgetAlign,
   }) : super(key: key);
 
   final AnchorData data;
@@ -28,8 +34,10 @@ class TipWidget extends StatefulWidget {
   final double arrowHeight;
 
   /// 这个bk部分的Padding
-  final EdgeInsetsGeometry clipPadding;
+  final bool ignoreArrowHeight;
   final Decoration? decoration;
+
+  final TipWidgetAlign? tipWidgetAlign;
 
   @override
   State<TipWidget> createState() => _TipWidgetState();
@@ -66,18 +74,31 @@ class _TipWidgetState extends State<TipWidget> {
     var bottomSpace = screenSize.height - (position.top + position.height);
     var direction = BubbleDirection.left;
     var targetSpace = leftSpace;
-    if (rightSpace > targetSpace) {
-      direction = BubbleDirection.right;
-      targetSpace = rightSpace;
-    }
 
-    if (topSpace > targetSpace) {
+    if (widget.tipWidgetAlign == null) {
+      if (rightSpace > targetSpace) {
+        direction = BubbleDirection.right;
+        targetSpace = rightSpace;
+      }
+      if (topSpace > targetSpace) {
+        direction = BubbleDirection.top;
+        targetSpace = topSpace;
+      }
+      if (bottomSpace > targetSpace) {
+        direction = BubbleDirection.bottom;
+        targetSpace = bottomSpace;
+      }
+    } else if (widget.tipWidgetAlign == TipWidgetAlign.leftRight) {
+      if (rightSpace > targetSpace) {
+        direction = BubbleDirection.right;
+        targetSpace = rightSpace;
+      }
+    } else if (widget.tipWidgetAlign == TipWidgetAlign.topBottom) {
       direction = BubbleDirection.top;
-      targetSpace = topSpace;
-    }
-    if (bottomSpace > targetSpace) {
-      direction = BubbleDirection.bottom;
-      targetSpace = bottomSpace;
+      if (bottomSpace > targetSpace) {
+        direction = BubbleDirection.bottom;
+        targetSpace = bottomSpace;
+      }
     }
 
     // calc the tip position
@@ -138,7 +159,7 @@ class _TipWidgetState extends State<TipWidget> {
           onChange: onChange,
           child: BubbleWidget(
               decoration: widget.decoration,
-              clipPadding: widget.clipPadding,
+              ignoreArrowHeight: widget.ignoreArrowHeight,
               arrowPosition: arrowPosition,
               direction: bubbleDirection,
               topLeftRadius: widget.topLeftRadius,

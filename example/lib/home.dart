@@ -21,10 +21,9 @@ class _HomePageState extends State<HomePage> {
 
   Widget renderBubble(String text) {
     return BubbleWidget(
-      clipPadding: const EdgeInsets.only(top: 35.0),
-      decoration: const BoxDecoration(
-          gradient: LinearGradient(colors: [Colors.red, Colors.blue])),
+      decoration: null,
       arrowPosition: 100,
+      ignoreArrowHeight: false,
       direction: BubbleDirection.bottom,
       topLeftRadius: const Radius.circular(15.0),
       topRightRadius: const Radius.circular(15.0),
@@ -36,20 +35,30 @@ class _HomePageState extends State<HomePage> {
         return SizedBox(
           width: 200,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               GestureDetector(
                 behavior: HitTestBehavior.translucent,
-                onTap: (() {
-                  debugPrint("============>");
-                }),
-                child: Center(
-                  child: SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: Container(color: Colors.blue)),
+                onTap: (() {}),
+                child: const Padding(
+                  padding: EdgeInsets.only(bottom: 10.0),
+                  child: Center(
+                    child: Icon(Icons.cancel_outlined),
+                  ),
                 ),
               ),
-              Padding(padding: const EdgeInsets.all(8.0), child: Text(text)),
+              Container(
+                  height: 80,
+                  decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(15),
+                          topRight: Radius.circular(15)),
+                      gradient: LinearGradient(
+                        colors: [Colors.red, Colors.blue],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      )),
+                  child: Center(child: Text(text))),
             ],
           ),
         );

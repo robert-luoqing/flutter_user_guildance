@@ -21,8 +21,8 @@ class BubbleWidget extends StatelessWidget {
     this.topRightRadius = const Radius.circular(4.0),
     this.bottomLeftRadius = const Radius.circular(4.0),
     this.bottomRightRadius = const Radius.circular(4.0),
-    this.clipPadding = const EdgeInsets.all(0),
-    this.decoration,
+    this.decoration = const BoxDecoration(color: Colors.white),
+    this.ignoreArrowHeight = true,
     this.child,
     this.childBuilder,
   }) : super(key: key);
@@ -42,9 +42,8 @@ class BubbleWidget extends StatelessWidget {
   final Radius bottomLeftRadius;
   final Radius bottomRightRadius;
 
-  /// 这个bk部分的Padding
-  final EdgeInsetsGeometry clipPadding;
   final Decoration? decoration;
+  final bool ignoreArrowHeight;
 
   final _minHeight = 32.0; // 内容最小高度
   final _minWidth = 50.0; // 内容最小宽度
@@ -55,19 +54,21 @@ class BubbleWidget extends StatelessWidget {
     var paddingBottom = 0.0;
     var paddingLeft = 0.0;
     var paddingRight = 0.0;
-    switch (direction) {
-      case BubbleDirection.left:
-        paddingLeft = arrowHeight;
-        break;
-      case BubbleDirection.right:
-        paddingRight = arrowHeight;
-        break;
-      case BubbleDirection.top:
-        paddingTop = arrowHeight;
-        break;
-      case BubbleDirection.bottom:
-        paddingBottom = arrowHeight;
-        break;
+    if (ignoreArrowHeight) {
+      switch (direction) {
+        case BubbleDirection.left:
+          paddingLeft = arrowHeight;
+          break;
+        case BubbleDirection.right:
+          paddingRight = arrowHeight;
+          break;
+        case BubbleDirection.top:
+          paddingTop = arrowHeight;
+          break;
+        case BubbleDirection.bottom:
+          paddingBottom = arrowHeight;
+          break;
+      }
     }
 
     Widget? content = child;
@@ -76,45 +77,30 @@ class BubbleWidget extends StatelessWidget {
     }
     content ??= Container();
 
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Positioned(
-            left: 0,
-            right: 0,
-            top: 0,
-            bottom: 0,
-            child: Padding(
-              padding: clipPadding,
-              child: ClipPath(
-                  clipper: _BubbleClipper(
-                      direction: direction,
-                      topLeftRadius: topLeftRadius,
-                      topRightRadius: topRightRadius,
-                      bottomLeftRadius: bottomLeftRadius,
-                      bottomRightRadius: bottomRightRadius,
-                      arrowWidth: arrowWidth,
-                      arrowHeight: arrowHeight,
-                      arrowPosition: arrowPosition,
-                      arrowPositionBased: arrowPositionBased),
-                  child: Container(
-                    decoration:
-                        decoration ?? const BoxDecoration(color: Colors.white),
-                  )),
-            )),
-        Container(
-            constraints: (const BoxConstraints())
-                .copyWith(minHeight: _minHeight, minWidth: _minWidth),
-            child: Padding(
-              padding: EdgeInsets.only(
-                  left: paddingLeft,
-                  right: paddingRight,
-                  top: paddingTop,
-                  bottom: paddingBottom),
-              child: content,
-            )),
-      ],
-    );
+    return ClipPath(
+        clipper: _BubbleClipper(
+            direction: direction,
+            topLeftRadius: topLeftRadius,
+            topRightRadius: topRightRadius,
+            bottomLeftRadius: bottomLeftRadius,
+            bottomRightRadius: bottomRightRadius,
+            arrowWidth: arrowWidth,
+            arrowHeight: arrowHeight,
+            arrowPosition: arrowPosition,
+            arrowPositionBased: arrowPositionBased),
+        child: Container(
+          decoration: decoration,
+          constraints: (const BoxConstraints())
+              .copyWith(minHeight: _minHeight, minWidth: _minWidth),
+          child: Padding(
+            padding: EdgeInsets.only(
+                left: paddingLeft,
+                right: paddingRight,
+                top: paddingTop,
+                bottom: paddingBottom),
+            child: content,
+          ),
+        ));
   }
 }
 
