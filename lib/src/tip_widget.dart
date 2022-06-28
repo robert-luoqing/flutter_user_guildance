@@ -4,22 +4,32 @@ import '../flutter_user_guildance.dart';
 import 'measure_size.dart';
 
 class TipWidget extends StatefulWidget {
-  const TipWidget(
-      {Key? key,
-      required this.data,
-      required this.child,
-      this.arrowWidth = 10.0,
-      this.arrowHeight = 10.0,
-      this.radius = const Radius.circular(4.0),
-      this.bkColor = Colors.white})
-      : super(key: key);
+  const TipWidget({
+    Key? key,
+    required this.data,
+    required this.child,
+    this.arrowWidth = 10.0,
+    this.arrowHeight = 10.0,
+    this.topLeftRadius = const Radius.circular(4.0),
+    this.topRightRadius = const Radius.circular(4.0),
+    this.bottomLeftRadius = const Radius.circular(4.0),
+    this.bottomRightRadius = const Radius.circular(4.0),
+    this.clipPadding = const EdgeInsets.all(0),
+    this.decoration,
+  }) : super(key: key);
 
   final AnchorData data;
   final Widget child;
-  final Color bkColor;
-  final Radius radius;
+  final Radius topLeftRadius;
+  final Radius topRightRadius;
+  final Radius bottomLeftRadius;
+  final Radius bottomRightRadius;
   final double arrowWidth;
   final double arrowHeight;
+
+  /// 这个bk部分的Padding
+  final EdgeInsetsGeometry clipPadding;
+  final Decoration? decoration;
 
   @override
   State<TipWidget> createState() => _TipWidgetState();
@@ -127,10 +137,14 @@ class _TipWidgetState extends State<TipWidget> {
         child: MeasureSize(
           onChange: onChange,
           child: BubbleWidget(
-              bkColor: widget.bkColor,
+              decoration: widget.decoration,
+              clipPadding: widget.clipPadding,
               arrowPosition: arrowPosition,
               direction: bubbleDirection,
-              radius: widget.radius,
+              topLeftRadius: widget.topLeftRadius,
+              topRightRadius: widget.topRightRadius,
+              bottomLeftRadius: widget.bottomLeftRadius,
+              bottomRightRadius: widget.bottomRightRadius,
               arrowHeight: widget.arrowHeight,
               arrowWidth: widget.arrowWidth,
               child: Padding(

@@ -19,6 +19,44 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
+  Widget renderBubble(String text) {
+    return BubbleWidget(
+      clipPadding: const EdgeInsets.only(top: 35.0),
+      decoration: const BoxDecoration(
+          gradient: LinearGradient(colors: [Colors.red, Colors.blue])),
+      arrowPosition: 100,
+      direction: BubbleDirection.bottom,
+      topLeftRadius: const Radius.circular(15.0),
+      topRightRadius: const Radius.circular(15.0),
+      bottomLeftRadius: const Radius.circular(15.0),
+      bottomRightRadius: const Radius.circular(15.0),
+      arrowHeight: 15,
+      arrowWidth: 15,
+      childBuilder: (context, direction) {
+        return SizedBox(
+          width: 200,
+          child: Column(
+            children: [
+              GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: (() {
+                  debugPrint("============>");
+                }),
+                child: Center(
+                  child: SizedBox(
+                      width: 30,
+                      height: 30,
+                      child: Container(color: Colors.blue)),
+                ),
+              ),
+              Padding(padding: const EdgeInsets.all(8.0), child: Text(text)),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return UserGuidance(
@@ -89,6 +127,10 @@ class _HomePageState extends State<HomePage> {
                           userGuidanceController.show(group: 1);
                         },
                         child: const Text("Button")),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 100.0),
+                    child: renderBubble("Hello, It test"),
                   ),
                   Expanded(
                       child: TabBarView(

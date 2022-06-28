@@ -7,15 +7,37 @@ typedef UserGuildanceTipBuilder = Widget? Function(
 typedef UserGuildanceDecorationBuilder = Decoration? Function(
     BuildContext context, AnchorData? data);
 
+class UserGuidancePositionCondition {
+  UserGuidancePositionCondition(
+      {required this.step,
+      this.subStep,
+      this.minX,
+      this.minY,
+      this.maxX,
+      this.maxY});
+
+  /// if [minY],[maxY] both is -1, It meaning should it appear in scroll view
+  double? minX;
+  double? minY;
+  double? maxX;
+  double? maxY;
+  int step;
+  int? subStep;
+}
+
 class UserGuidanceInner extends StatefulWidget {
-  const UserGuidanceInner(
-      {Key? key,
-      required this.controller,
-      this.duration = const Duration(milliseconds: 250),
-      this.tipBuilder,
-      this.slotBuilder,
-      this.opacity = 0.4})
-      : super(key: key);
+  const UserGuidanceInner({
+    Key? key,
+    required this.controller,
+    this.duration = const Duration(milliseconds: 250),
+    this.tipBuilder,
+    this.slotBuilder,
+    this.opacity = 0.4,
+    this.anchorAppearConditions,
+    this.anchorPositionConditions,
+    this.showMaskWhenMissCondition = true,
+    this.moveNextOnTap = true,
+  }) : super(key: key);
 
   final UserGuidanceController controller;
   final Duration duration;
@@ -23,6 +45,19 @@ class UserGuidanceInner extends StatefulWidget {
   final UserGuildanceDecorationBuilder? slotBuilder;
 
   final double opacity;
+
+  /// true: move next when tap mask or item
+  final bool moveNextOnTap;
+
+  /// If [anchorAppearConditions] or [anchorPositionConditions] is not null,
+  /// and controller.show invoked, The user guildance will not show up.
+  /// Exception meet the conditions. Before meeting condition,
+  /// if [showMaskWhenMissCondition] is true, The mask will show up.
+  /// Otherwise the user guildance will keep hidden
+  /// The user guildance will appear when the group condition meet
+  final Map<int, List<int>>? anchorAppearConditions;
+  final Map<int, List<UserGuidancePositionCondition>>? anchorPositionConditions;
+  final bool showMaskWhenMissCondition;
 
   @override
   _UserGuidanceInnerState createState() => _UserGuidanceInnerState();
@@ -162,7 +197,9 @@ class _UserGuidanceInnerState extends State<UserGuidanceInner> {
   }
 
   void _handlePressed() {
-    _controller.next();
+    if (widget.moveNextOnTap) {
+      _controller.next();
+    }
   }
 
   @override
