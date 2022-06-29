@@ -16,7 +16,7 @@ class UserGuidance extends StatefulWidget {
     this.anchorAppearConditions,
     this.anchorPositionConditions,
     this.anchorPageConditions,
-    this.showMaskWhenMissCondition = true,
+    this.showMaskWhenMissCondition = false,
     this.moveNextOnTap = true,
   }) : super(key: key);
 
@@ -36,7 +36,9 @@ class UserGuidance extends StatefulWidget {
   /// if [showMaskWhenMissCondition] is true, The mask will show up.
   /// Otherwise the user guildance will keep hidden
   /// The user guildance will appear when the group condition meet
-  final Map<int, List<int>>? anchorAppearConditions;
+  /// if [minY],[maxY],[minX],[maxX] in anchorPositionConditions both is -1,
+  /// It meaning should it appear in scroll view
+  final Map<int, List<UserGuidanceAppearCondition>>? anchorAppearConditions;
   final Map<int, List<UserGuidancePositionCondition>>? anchorPositionConditions;
   final Map<int, String>? anchorPageConditions;
   final bool showMaskWhenMissCondition;
@@ -46,21 +48,27 @@ class UserGuidance extends StatefulWidget {
 }
 
 class _UserGuidanceState extends State<UserGuidance> {
+  final List<AnchorData> anchorDatas = [];
+  final positionHandlers = <PositoinChangeHandler>[];
+
   @override
   Widget build(BuildContext context) {
     return UserGuildanceAnchorInherit(
+        anchorDatas: anchorDatas,
+        positionHandlers: positionHandlers,
         child: Stack(children: [
-      widget.child,
-      UserGuidanceInner(
-          controller: widget.controller,
-          duration: widget.duration,
-          tipBuilder: widget.tipBuilder,
-          slotBuilder: widget.slotBuilder,
-          opacity: widget.opacity,
-          anchorAppearConditions: widget.anchorAppearConditions,
-          anchorPositionConditions: widget.anchorPositionConditions,
-          showMaskWhenMissCondition: widget.showMaskWhenMissCondition,
-          moveNextOnTap: widget.moveNextOnTap)
-    ]));
+          widget.child,
+          UserGuidanceInner(
+              controller: widget.controller,
+              duration: widget.duration,
+              tipBuilder: widget.tipBuilder,
+              slotBuilder: widget.slotBuilder,
+              opacity: widget.opacity,
+              anchorAppearConditions: widget.anchorAppearConditions,
+              anchorPositionConditions: widget.anchorPositionConditions,
+              anchorPageConditions: widget.anchorPageConditions,
+              showMaskWhenMissCondition: widget.showMaskWhenMissCondition,
+              moveNextOnTap: widget.moveNextOnTap)
+        ]));
   }
 }

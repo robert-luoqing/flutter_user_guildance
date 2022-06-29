@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_user_guildance/flutter_user_guildance.dart';
 
 class SimplePage extends StatefulWidget {
-  const SimplePage({Key? key, required this.title}) : super(key: key);
-  final String title;
+  const SimplePage({
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<SimplePage> createState() => _SimplePageState();

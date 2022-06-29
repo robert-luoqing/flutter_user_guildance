@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_user_guildance/flutter_user_guildance.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key, required this.title}) : super(key: key);
-  final String title;
+  const HomePage({Key? key}) : super(key: key);
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -12,6 +11,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   UserGuidanceController userGuidanceController = UserGuidanceController();
   var tabs = ["Tab1", "Tab2", "Tab3"];
+  var buttonWidth = 100.0;
 
   @override
   void dispose() {
@@ -22,7 +22,7 @@ class _HomePageState extends State<HomePage> {
   Widget renderBubble(String text) {
     return BubbleWidget(
       decoration: null,
-      arrowPosition: 100,
+      arrowPosition: 156,
       ignoreArrowHeight: false,
       direction: BubbleDirection.bottom,
       topLeftRadius: const Radius.circular(15.0),
@@ -123,19 +123,29 @@ class _HomePageState extends State<HomePage> {
                               style: const TextStyle(color: Colors.black),
                             )));
                   }).toList()),
-                  UserGuildanceAnchor(
-                    group: 1,
-                    step: 2,
-                    tag: "Start press the button",
-                    adjustRect: (rect) {
-                      return Rect.fromLTWH(rect.left, rect.top + 5.0,
-                          rect.width, rect.height - 10.0);
-                    },
-                    child: ElevatedButton(
-                        onPressed: () {
-                          userGuidanceController.show(group: 1);
-                        },
-                        child: const Text("Button")),
+                  Padding(
+                    padding: EdgeInsets.only(top: buttonWidth),
+                    child: UserGuildanceAnchor(
+                      group: 1,
+                      step: 2,
+                      tag: "Start press the button",
+                      adjustRect: (rect) {
+                        return Rect.fromLTWH(rect.left, rect.top + 5.0,
+                            rect.width, rect.height - 10.0);
+                      },
+                      child: ElevatedButton(
+                          onPressed: () async {
+                            userGuidanceController.show(group: 1);
+                            await Future.delayed(const Duration(seconds: 5));
+                            buttonWidth = 200;
+                            setState(() {});
+                            await Future.delayed(const Duration(seconds: 5));
+                            buttonWidth = 100;
+                            setState(() {});
+                          },
+                          child: SizedBox(
+                              width: buttonWidth, child: const Text("Button"))),
+                    ),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(top: 100.0),

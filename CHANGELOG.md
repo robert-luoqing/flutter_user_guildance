@@ -6,3 +6,11 @@
 * Change index and subIndex to step and subStep
 ## 2.0.1
 * Update readme
+
+## 2.0.2
+* Add needMonitorScroll property into UserGuildanceAnchor
+* Add anchorAppearConditions property into UserGuidance
+* Add anchorPositionConditions property into UserGuidance
+* Add anchorPageConditions property into UserGuidance
+* Add showMaskWhenMissCondition property into UserGuidance
+* Add currentPage into UserGuidanceController

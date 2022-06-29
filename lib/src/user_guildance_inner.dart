@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../flutter_user_guildance.dart';
@@ -17,12 +18,18 @@ class UserGuidancePositionCondition {
       this.maxY});
 
   /// if [minY],[maxY] both is -1, It meaning should it appear in scroll view
-  double? minX;
-  double? minY;
-  double? maxX;
-  double? maxY;
-  int step;
-  int? subStep;
+  final double? minX;
+  final double? minY;
+  final double? maxX;
+  final double? maxY;
+  final int step;
+  final int? subStep;
+}
+
+class UserGuidanceAppearCondition {
+  UserGuidanceAppearCondition({required this.step, this.subStep});
+  final int step;
+  final int? subStep;
 }
 
 class UserGuidanceInner extends StatefulWidget {
@@ -35,7 +42,8 @@ class UserGuidanceInner extends StatefulWidget {
     this.opacity = 0.4,
     this.anchorAppearConditions,
     this.anchorPositionConditions,
-    this.showMaskWhenMissCondition = true,
+    this.anchorPageConditions,
+    this.showMaskWhenMissCondition = false,
     this.moveNextOnTap = true,
   }) : super(key: key);
 
@@ -55,8 +63,9 @@ class UserGuidanceInner extends StatefulWidget {
   /// if [showMaskWhenMissCondition] is true, The mask will show up.
   /// Otherwise the user guildance will keep hidden
   /// The user guildance will appear when the group condition meet
-  final Map<int, List<int>>? anchorAppearConditions;
+  final Map<int, List<UserGuidanceAppearCondition>>? anchorAppearConditions;
   final Map<int, List<UserGuidancePositionCondition>>? anchorPositionConditions;
+  final Map<int, String>? anchorPageConditions;
   final bool showMaskWhenMissCondition;
 
   @override
@@ -95,11 +104,141 @@ class _UserGuidanceInnerState extends State<UserGuidanceInner> {
     return null;
   }
 
+  bool determinePageCondition(AnchorData? anchorData, String? currentPage) {
+    if (anchorData != null && widget.anchorPageConditions != null) {
+      var groupBelongPage = widget.anchorPageConditions![anchorData.group];
+      if (groupBelongPage != null) {
+        if (groupBelongPage != currentPage) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
+  bool determineAppearCondition(AnchorData? anchorData) {
+    var anchorAppearConditions = widget.anchorAppearConditions;
+    if (anchorData != null &&
+        anchorAppearConditions != null &&
+        anchorAppearConditions.isNotEmpty) {
+      var group = anchorData.group;
+      var groupAppearCondition = anchorAppearConditions[group];
+      if (groupAppearCondition != null && groupAppearCondition.isNotEmpty) {
+        var anchorObject = UserGuildanceAnchorInherit.of(context);
+        if (anchorObject != null) {
+          // Here is check the conditions
+          var reportDatas = anchorObject.anchorDatas;
+          for (var condition in groupAppearCondition) {
+            var matched = false;
+            for (var reportData in reportDatas) {
+              if (condition.step == reportData.step &&
+                  condition.subStep == reportData.subStep) {
+                matched = true;
+                break;
+              }
+            }
+            if (matched == false) {
+              return false;
+            }
+          }
+        }
+      }
+    }
+
+    return true;
+  }
+
+  bool determinePositionCondition(AnchorData? anchorData) {
+    var anchorPositionConditions = widget.anchorPositionConditions;
+    if (anchorData != null &&
+        anchorPositionConditions != null &&
+        anchorPositionConditions.isNotEmpty) {
+      var group = anchorData.group;
+      var groupPositionCondition = anchorPositionConditions[group];
+      if (groupPositionCondition != null && groupPositionCondition.isNotEmpty) {
+        var anchorObject = UserGuildanceAnchorInherit.of(context);
+        if (anchorObject != null) {
+          // Here is check the conditions
+          var reportDatas = anchorObject.anchorDatas;
+          for (var condition in groupPositionCondition) {
+            var matched = false;
+            for (var reportData in reportDatas) {
+              if (condition.step == reportData.step &&
+                  condition.subStep == reportData.subStep) {
+                var minX = condition.minX ?? -10000000.0;
+                var minY = condition.minY ?? -10000000.0;
+                var maxX = condition.maxX ?? double.maxFinite;
+                var maxY = condition.maxY ?? double.maxFinite;
+
+                if (minX == -1 && minY == -1 && maxX == -1 && maxY == -1) {
+                  if (reportData.inScrollZone ?? false) {
+                    matched = true;
+                  } else {
+                    return false;
+                  }
+                } else {
+                  if (minX <= reportData.position.left &&
+                      maxX >= reportData.position.right &&
+                      minY <= reportData.position.top &&
+                      maxY >= reportData.position.bottom) {
+                    matched = true;
+                  } else {
+                    return false;
+                  }
+                }
+
+                break;
+              }
+            }
+            if (matched == false) {
+              return false;
+            }
+          }
+        }
+      }
+    }
+
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<UserGuildanceModel>(
       valueListenable: _controller,
       builder: (_, value, child) {
+        var visible = value.visible;
+        var anchorData = value.data;
+        if (visible) {
+          visible = determinePageCondition(anchorData, value.currentPage);
+        }
+        if (visible) {
+          visible = determineAppearCondition(anchorData);
+        }
+
+        if (visible) {
+          visible = determinePositionCondition(anchorData);
+        }
+
+        late Widget renderChild;
+        if (visible) {
+          renderChild = SizedBox(key: const ValueKey("switch_1"), child: child);
+        } else {
+          if (value.visible && widget.showMaskWhenMissCondition) {
+            renderChild = SizedBox(
+                key: const ValueKey("switch_2"),
+                child: Container(
+                  color: Colors.black54,
+                  child: const Center(
+                      child: CupertinoActivityIndicator(
+                    radius: 15,
+                  )),
+                ));
+          } else {
+            renderChild = const SizedBox(key: ValueKey("switch_2"));
+          }
+        }
+
         return AnimatedSwitcher(
           duration: widget.duration,
           transitionBuilder: (child, animation) {
@@ -108,9 +247,7 @@ class _UserGuidanceInnerState extends State<UserGuidanceInner> {
               child: child,
             );
           },
-          child: value.visible
-              ? SizedBox(key: const ValueKey("switch_1"), child: child)
-              : const SizedBox(key: ValueKey("switch_2")),
+          child: renderChild,
         );
       },
       child: GestureDetector(

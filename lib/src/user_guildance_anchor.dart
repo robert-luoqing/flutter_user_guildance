@@ -17,7 +17,8 @@ class UserGuildanceAnchor extends SingleChildRenderObjectWidget {
       this.reportType,
       this.adjustRect,
       this.tag,
-      this.group = 0})
+      this.group = 0,
+      this.needMonitorScroll = false})
       : super(key: key, child: child);
 
   final int step;
@@ -25,6 +26,10 @@ class UserGuildanceAnchor extends SingleChildRenderObjectWidget {
   final AnchorReportParentType? reportType;
   final dynamic tag;
   final int group;
+
+  /// It will effect performance. If the item is not in list view or scroll,
+  /// Should keep it to false
+  final bool needMonitorScroll;
 
   final AnchorAdjustRect? adjustRect;
 
@@ -38,6 +43,7 @@ class UserGuildanceAnchor extends SingleChildRenderObjectWidget {
         adjustRect: adjustRect,
         tag: tag,
         group: group);
+    renderObj.needMonitorScroll = needMonitorScroll;
     return renderObj;
   }
 
@@ -53,11 +59,14 @@ class UserGuildanceAnchor extends SingleChildRenderObjectWidget {
     _anchorRenderObject.reportType = reportType;
     _anchorRenderObject.adjustRect = adjustRect;
     _anchorRenderObject.group = group;
+    _anchorRenderObject.needMonitorScroll = needMonitorScroll;
     super.updateRenderObject(context, renderObject);
   }
 }
 
 class _AnchorRenderObject extends RenderShiftedBox {
+  UserGuildanceAnchorInherit? anchorObject;
+  ScrollPosition? scrollPosition;
   _AnchorRenderObject(
       {required this.context,
       RenderBox? child,
@@ -77,13 +86,106 @@ class _AnchorRenderObject extends RenderShiftedBox {
   AnchorAdjustRect? adjustRect;
   int group;
 
-  void reportPosition(Offset point, Size size, dynamic tag) {
+  bool _needMonitorScroll = false;
+
+  /// It will effect performance. If the item is not in list view or scroll,
+  /// Should keep it to false
+  set needMonitorScroll(status) {
+    if (status != _needMonitorScroll) {
+      _needMonitorScroll = status;
+      if (status) {
+        var newScrollPosition = Scrollable.of(context)?.position;
+        if (scrollPosition != newScrollPosition) {
+          if (scrollPosition != null) {
+            scrollPosition!.removeListener(monitorParentScroll);
+          }
+          scrollPosition = newScrollPosition;
+          if (scrollPosition != null) {
+            scrollPosition!.addListener(monitorParentScroll);
+          }
+        }
+      } else {
+        if (scrollPosition != null) {
+          scrollPosition!.removeListener(monitorParentScroll);
+        }
+        scrollPosition = null;
+      }
+    }
+  }
+
+  void monitorParentScroll() {
+    if (scrollPosition != null) {
+      handleReportPosition();
+    }
+  }
+
+  void reportPosition(
+      Offset point, Size size, dynamic tag, bool? inScrollZone) {
     var position = Rect.fromLTWH(point.dx, point.dy, size.width, size.height);
     if (adjustRect != null) {
       position = adjustRect!(position);
     }
-    UserGuildanceAnchorInherit.of(context)
-        ?.report(group, step, subStep, position, tag);
+    anchorObject ??= UserGuildanceAnchorInherit.of(context);
+    anchorObject?.report(group, step, subStep, position, tag, inScrollZone);
+  }
+
+  RenderBox? findParentRenderObject(String name, bool returnPrev) {
+    var parentNode = parent;
+    AbstractNode? prevNode;
+    while (parentNode != null) {
+      var runtimeType = parentNode.runtimeType.toString();
+      if (runtimeType == name) {
+        if (returnPrev) {
+          if (prevNode != null && prevNode is RenderBox) {
+            return prevNode;
+          }
+          return null;
+        } else {
+          if (parentNode is RenderBox) {
+            return parentNode;
+          }
+          return null;
+        }
+      }
+      prevNode = parentNode;
+      parentNode = parentNode.parent;
+    }
+    return null;
+  }
+
+  handleReportPosition() {
+    try {
+      if (reportType == null) {
+        var positionObj = localToGlobal(const Offset(0, 0));
+        bool? inScrollZone;
+        if (scrollPosition != null) {
+          var matchedNode = findParentRenderObject("RenderViewport", false);
+          if (matchedNode != null) {
+            var translation = getTransformTo(matchedNode).getTranslation();
+            var rect = paintBounds.shift(Offset(translation.x, translation.y));
+            var viewportSize = matchedNode.size;
+            if (rect.top >= 0 &&
+                rect.left >= 0 &&
+                rect.right <= viewportSize.width &&
+                rect.bottom <= viewportSize.height) {
+              inScrollZone = true;
+            } else {
+              inScrollZone = false;
+            }
+          }
+        }
+
+        reportPosition(positionObj, size, tag, inScrollZone);
+      } else if (reportType == AnchorReportParentType.tab) {
+        var matchedNode = findParentRenderObject("_TabLabelBarRenderer", true);
+        if (matchedNode != null) {
+          var positionObj = matchedNode.localToGlobal(const Offset(0, 0));
+          reportPosition(positionObj, matchedNode.size, tag, null);
+        }
+      }
+    } catch (e, s) {
+      debugPrint("Fetch position error: $e, $s");
+    }
   }
 
   @override
@@ -104,33 +206,15 @@ class _AnchorRenderObject extends RenderShiftedBox {
   @override
   void paint(PaintingContext context, Offset offset) {
     super.paint(context, offset);
-    try {
-      if (reportType == null) {
-        var positionObj = localToGlobal(const Offset(0, 0));
-        reportPosition(positionObj, size, tag);
-      } else if (reportType == AnchorReportParentType.tab) {
-        var parentNode = parent;
-        AbstractNode? prevNode;
-        while (parentNode != null) {
-          if (parentNode.runtimeType.toString() == "_TabLabelBarRenderer") {
-            if (prevNode != null && prevNode is RenderBox) {
-              var positionObj = prevNode.localToGlobal(const Offset(0, 0));
-              reportPosition(positionObj, prevNode.size, tag);
-              break;
-            }
-          }
-          prevNode = parentNode;
-          parentNode = parentNode.parent;
-        }
-      }
-    } catch (e, s) {
-      debugPrint("Fetch position error: $e, $s");
-    }
+    handleReportPosition();
   }
 
   @override
   void dispose() {
-    UserGuildanceAnchorInherit.of(context)?.remove(step, subStep);
+    anchorObject?.remove(step, subStep);
+    if (scrollPosition != null) {
+      scrollPosition!.removeListener(monitorParentScroll);
+    }
     super.dispose();
   }
 }

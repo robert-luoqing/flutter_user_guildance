@@ -6,24 +6,28 @@ class AnchorData {
       required this.step,
       required this.position,
       this.subStep,
-      this.tag});
+      this.tag,
+      this.inScrollZone});
   int group;
   int step;
   int? subStep;
   Rect position;
   dynamic tag;
+  bool? inScrollZone;
 }
 
-typedef PositoinChangeHandler = void Function();
+typedef PositoinChangeHandler = void Function(AnchorData, bool);
 
 class UserGuildanceAnchorInherit extends InheritedWidget {
-  UserGuildanceAnchorInherit({
-    Key? key,
-    required Widget child,
-  }) : super(key: key, child: child);
+  const UserGuildanceAnchorInherit(
+      {Key? key,
+      required Widget child,
+      required this.anchorDatas,
+      required this.positionHandlers})
+      : super(key: key, child: child);
 
-  final List<AnchorData> data = []; //需要在子树中共享的数据，保存点击次数
-  final _positionHandlers = <PositoinChangeHandler>[];
+  final List<AnchorData> anchorDatas;
+  final List<PositoinChangeHandler> positionHandlers;
 
   //定义一个便捷方法，方便子树中的widget获取共享数据
   static UserGuildanceAnchorInherit? of(BuildContext context) {
@@ -39,33 +43,35 @@ class UserGuildanceAnchorInherit extends InheritedWidget {
   }
 
   void addPositionListener(PositoinChangeHandler callback) {
-    if (!_positionHandlers.contains(callback)) {
-      _positionHandlers.add(callback);
+    if (!positionHandlers.contains(callback)) {
+      positionHandlers.add(callback);
     }
   }
 
   void removePositionListener(PositoinChangeHandler callback) {
-    if (_positionHandlers.contains(callback)) {
-      _positionHandlers.remove(callback);
+    if (positionHandlers.contains(callback)) {
+      positionHandlers.remove(callback);
     }
   }
 
-  void _notifyPositoinChanged() {
-    for (var item in _positionHandlers) {
-      item();
+  void _notifyPositoinChanged(AnchorData data, bool isInsert) {
+    for (var handler in positionHandlers) {
+      handler(data, isInsert);
     }
   }
 
-  void report(int group, int step, int? subStep, Rect position, dynamic tag) {
+  void report(int group, int step, int? subStep, Rect position, dynamic tag,
+      bool? inScrollZone) {
     var matched = false;
-    for (var item in data) {
+    for (var item in anchorDatas) {
       if (item.step == step && item.subStep == subStep && item.group == group) {
-        if (item.position.top != position.top &&
-            item.position.left != position.left &&
-            item.position.width != position.width &&
+        if (item.position.top != position.top ||
+            item.position.left != position.left ||
+            item.position.width != position.width ||
             item.position.height != position.height) {
           item.position = position;
-          _notifyPositoinChanged();
+          item.inScrollZone = inScrollZone;
+          _notifyPositoinChanged(item, false);
         }
         matched = true;
         break;
@@ -73,22 +79,24 @@ class UserGuildanceAnchorInherit extends InheritedWidget {
     }
 
     if (!matched) {
-      data.add(AnchorData(
+      var item = AnchorData(
           group: group,
           step: step,
           subStep: subStep,
           position: position,
-          tag: tag));
-      _notifyPositoinChanged();
+          tag: tag,
+          inScrollZone: inScrollZone);
+      anchorDatas.add(item);
+      _notifyPositoinChanged(item, true);
     }
   }
 
   void remove(int step, int? subStep) {
-    var length = data.length;
+    var length = anchorDatas.length;
     for (var i = length - 1; i >= 0; i--) {
-      var item = data[i];
+      var item = anchorDatas[i];
       if (item.step == step && item.subStep == subStep) {
-        data.removeAt(i);
+        anchorDatas.removeAt(i);
         break;
       }
     }

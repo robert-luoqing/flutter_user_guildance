@@ -36,11 +36,45 @@ class UserGuidanceController extends ValueNotifier<UserGuildanceModel> {
   }
 
   void attach(BuildContext context) {
-    _context = context;
+    if (_context != context) {
+      if (_context != null) {
+        UserGuildanceAnchorInherit.of(_context!)
+            ?.removePositionListener(positionListener);
+      }
+      _context = context;
+      if (_context != null) {
+        WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+          UserGuildanceAnchorInherit.of(_context!)
+              ?.addPositionListener(positionListener);
+        });
+      }
+    }
   }
 
   void detach() {
-    _context = null;
+    if (_context != null) {
+      UserGuildanceAnchorInherit.of(_context!)
+          ?.removePositionListener(positionListener);
+      _context = null;
+    }
+  }
+
+  void positionListener(AnchorData data, bool isNew) {
+    var curAnchorData = value.data;
+    if (curAnchorData != null) {
+      if (curAnchorData.group == data.group) {
+        if (curAnchorData.step == data.step &&
+            curAnchorData.subStep == data.subStep) {
+          value.data = data;
+        }
+
+        WidgetsBinding.instance!.addPostFrameCallback(
+          (timeStamp) {
+            notifyListeners();
+          },
+        );
+      }
+    }
   }
 
   /// return: 0: equal, 1: above, -1: less
@@ -61,7 +95,7 @@ class UserGuidanceController extends ValueNotifier<UserGuildanceModel> {
   AnchorData? _getInitData(int group, int step, int subStep) {
     AnchorData? minItem;
     if (_context != null) {
-      var data = UserGuildanceAnchorInherit.of(_context!)?.data;
+      var data = UserGuildanceAnchorInherit.of(_context!)?.anchorDatas;
       if (data != null) {
         for (var item in data) {
           if (item.group == group) {
@@ -93,7 +127,7 @@ class UserGuidanceController extends ValueNotifier<UserGuildanceModel> {
     } else {
       AnchorData? minItem;
       if (_context != null) {
-        var data = UserGuildanceAnchorInherit.of(_context!)?.data;
+        var data = UserGuildanceAnchorInherit.of(_context!)?.anchorDatas;
         if (data != null) {
           for (var item in data) {
             if (curData.group == item.group) {
