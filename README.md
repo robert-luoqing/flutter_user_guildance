@@ -32,6 +32,7 @@ Notice: If the conditions have been set, controller.show() may not work util the
 | slotBuilder | Provide custom slot effect. |
 | opacity | The mask's opacity |
 | duration | The animiation time in two step. |
+| customAnchors | Add custom anchors which not wrap widget. |
 | moveNextOnTap | true: Move next when tap user guildance area. false: It need the user to mainipulate controller to move next. |
 | anchorAppearConditions | All anchor has show in UI. For example: anchorAppearConditions: { 1: [UserGuidanceAppearCondition(step: 3)] }. 1: is group, If you have invoke controller.show(group: 1), But step 3 in anchor is not report its location, The guildance will not show up util the anchor(step 3) report its location  |
 | anchorPositionConditions | All anchor location has meet the conditions. See: anchorPositionConditions |

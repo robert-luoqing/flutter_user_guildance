@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-
-import 'user_guildance_anchor_inherit.dart';
-import 'user_guildance_model.dart';
+import '../flutter_user_guildance.dart';
 
 class UserGuidanceController extends ValueNotifier<UserGuildanceModel> {
   UserGuidanceController() : super(UserGuildanceModel(visible: false));
 
-  BuildContext? _context;
+  UserGuidanceState? _userGuidanceState;
 
   set currentPage(String? page) {
     if (value.currentPage != page) {
@@ -35,46 +33,21 @@ class UserGuidanceController extends ValueNotifier<UserGuildanceModel> {
     notifyListeners();
   }
 
-  void attach(BuildContext context) {
-    if (_context != context) {
-      if (_context != null) {
-        UserGuildanceAnchorInherit.of(_context!)
-            ?.removePositionListener(positionListener);
-      }
-      _context = context;
-      if (_context != null) {
-        WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
-          UserGuildanceAnchorInherit.of(_context!)
-              ?.addPositionListener(positionListener);
-        });
-      }
+  void attach(UserGuidanceState instance) {
+    if (_userGuidanceState != instance) {
+      _userGuidanceState = instance;
     }
   }
 
   void detach() {
-    if (_context != null) {
-      UserGuildanceAnchorInherit.of(_context!)
-          ?.removePositionListener(positionListener);
-      _context = null;
+    if (_userGuidanceState != null) {
+      _userGuidanceState = null;
     }
   }
 
-  void positionListener(AnchorData data, bool isNew) {
-    var curAnchorData = value.data;
-    if (curAnchorData != null) {
-      if (curAnchorData.group == data.group) {
-        if (curAnchorData.step == data.step &&
-            curAnchorData.subStep == data.subStep) {
-          value.data = data;
-        }
-
-        WidgetsBinding.instance!.addPostFrameCallback(
-          (timeStamp) {
-            notifyListeners();
-          },
-        );
-      }
-    }
+  @override
+  void notifyListeners() {
+    super.notifyListeners();
   }
 
   /// return: 0: equal, 1: above, -1: less
@@ -92,26 +65,88 @@ class UserGuidanceController extends ValueNotifier<UserGuildanceModel> {
     return -1;
   }
 
-  AnchorData? _getInitData(int group, int step, int subStep) {
-    AnchorData? minItem;
-    if (_context != null) {
-      var data = UserGuildanceAnchorInherit.of(_context!)?.anchorDatas;
+  List<AnchorData> getFullAnchorDatas(int group) {
+    var result = <AnchorData>[];
+    if (_userGuidanceState != null) {
+      var data = _userGuidanceState?.anchorDatas;
       if (data != null) {
         for (var item in data) {
           if (item.group == group) {
-            var compairResult =
-                compair(item.step, item.subStep ?? 0, step, subStep);
-            if (compairResult != -1) {
-              if (minItem == null) {
-                minItem = item;
-              } else {
-                compairResult = compair(item.step, item.subStep ?? 0,
-                    minItem.step, minItem.subStep ?? 0);
-                if (compairResult != 1) {
-                  minItem = item;
-                }
-              }
-            }
+            result.add(item);
+          }
+        }
+      }
+
+      /// Handle appear condition
+      var appearConditions = _userGuidanceState!.widget.anchorAppearConditions;
+      if (appearConditions != null) {
+        intergrateConditionAnchorData(group, appearConditions[group], result);
+      }
+
+      /// Handle appear condition
+      var positionConditions =
+          _userGuidanceState!.widget.anchorPositionConditions;
+      if (positionConditions != null && positionConditions.containsKey(group)) {
+        intergrateConditionAnchorData(group, positionConditions[group], result);
+      }
+
+      // intergrate customAnchors
+      List<UserGuildanceCustomAnchor> customAnchors =
+          _userGuidanceState?.widget.customAnchors ?? [];
+      for (var anchor in customAnchors) {
+        if (anchor.group == group) {
+          result.add(AnchorData(
+              group: group,
+              step: anchor.step,
+              subStep: anchor.subStep,
+              position: anchor.position,
+              tag: anchor.tag,
+              type: AnchorDataType.custom));
+        }
+      }
+
+      return result;
+    }
+    return result;
+  }
+
+  void intergrateConditionAnchorData(int group,
+      List<UserGuidanceCondition>? conditions, List<AnchorData> result) {
+    if (conditions != null) {
+      for (var condition in conditions) {
+        bool matched = false;
+        for (var item in result) {
+          if (item.step == condition.step &&
+              item.subStep == condition.subStep) {
+            matched = true;
+            break;
+          }
+        }
+        if (!matched) {
+          result.add(AnchorData(
+              group: group,
+              step: condition.step,
+              subStep: condition.subStep,
+              position: Rect.zero));
+        }
+      }
+    }
+  }
+
+  AnchorData? _getInitData(int group, int step, int subStep) {
+    AnchorData? minItem;
+
+    var groupAchors = getFullAnchorDatas(group);
+    for (var item in groupAchors) {
+      var compairResult = compair(item.step, item.subStep ?? 0, step, subStep);
+      if (compairResult != -1) {
+        if (minItem == null) {
+          minItem = item;
+        } else {
+          compairResult = compair(
+              item.step, item.subStep ?? 0, minItem.step, minItem.subStep ?? 0);
+          if (compairResult != 1) {
+            minItem = item;
           }
         }
       }
@@ -126,24 +161,19 @@ class UserGuidanceController extends ValueNotifier<UserGuildanceModel> {
       throw "Not start";
     } else {
       AnchorData? minItem;
-      if (_context != null) {
-        var data = UserGuildanceAnchorInherit.of(_context!)?.anchorDatas;
-        if (data != null) {
-          for (var item in data) {
-            if (curData.group == item.group) {
-              var compairResult = compair(item.step, item.subStep ?? 0,
-                  curData.step, curData.subStep ?? 0);
-              if (compairResult == 1) {
-                if (minItem == null) {
-                  minItem = item;
-                } else {
-                  compairResult = compair(item.step, item.subStep ?? 0,
-                      minItem.step, minItem.subStep ?? 0);
-                  if (compairResult == -1) {
-                    minItem = item;
-                  }
-                }
-              }
+      var groupAchors = getFullAnchorDatas(curData.group);
+
+      for (var item in groupAchors) {
+        var compairResult = compair(
+            item.step, item.subStep ?? 0, curData.step, curData.subStep ?? 0);
+        if (compairResult == 1) {
+          if (minItem == null) {
+            minItem = item;
+          } else {
+            compairResult = compair(item.step, item.subStep ?? 0, minItem.step,
+                minItem.subStep ?? 0);
+            if (compairResult == -1) {
+              minItem = item;
             }
           }
         }

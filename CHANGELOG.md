@@ -14,3 +14,6 @@
 * Add anchorPageConditions property into UserGuidance
 * Add showMaskWhenMissCondition property into UserGuidance
 * Add currentPage into UserGuidanceController
+
+## 2.0.3
+* Add customAnchors into UserGuidance

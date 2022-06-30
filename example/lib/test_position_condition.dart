@@ -15,6 +15,15 @@ class _TestPositionConditionPageState extends State<TestPositionConditionPage> {
   UserGuidanceController userGuidanceController = UserGuidanceController();
 
   @override
+  void initState() {
+    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+      userGuidanceController.show();
+    });
+
+    super.initState();
+  }
+
+  @override
   void dispose() {
     userGuidanceController.dispose();
     super.dispose();
@@ -33,6 +42,18 @@ class _TestPositionConditionPageState extends State<TestPositionConditionPage> {
       anchorAppearConditions: {
         0: [UserGuidanceAppearCondition(step: 2)]
       },
+      customAnchors: [
+        UserGuildanceCustomAnchor(
+            group: 0,
+            step: 4,
+            position: const Rect.fromLTWH(100, 100, 0, 0),
+            tag: "This is custom tag1"),
+        UserGuildanceCustomAnchor(
+            group: 0,
+            step: 5,
+            position: const Rect.fromLTWH(100, 100, 0, 0),
+            tag: "This is custom tag2")
+      ],
       opacity: 0.5,
       child: Scaffold(
           body: SafeArea(
@@ -43,7 +64,7 @@ class _TestPositionConditionPageState extends State<TestPositionConditionPage> {
             Padding(
               padding: const EdgeInsets.only(top: 0),
               child: UserGuildanceAnchor(
-                step: 1,
+                step: 3,
                 tag: "Start press the button",
                 child: ElevatedButton(
                     onPressed: () async {

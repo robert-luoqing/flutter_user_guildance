@@ -11,8 +11,8 @@ class SectionViewRoute {
   static final Map<String, WidgetBuilder> routes = {
     "/": (context) => Stack(
           children: const [
-            // TestPositionConditionPage(),
-            HomePage()
+            TestPositionConditionPage(),
+            // HomePage()
             // SimplePage()
           ],
         ),

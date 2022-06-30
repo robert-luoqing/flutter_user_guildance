@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+enum AnchorDataType { node, custom }
+
 class AnchorData {
   AnchorData(
       {required this.group,
@@ -7,13 +9,15 @@ class AnchorData {
       required this.position,
       this.subStep,
       this.tag,
-      this.inScrollZone});
+      this.inScrollZone,
+      this.type = AnchorDataType.custom});
   int group;
   int step;
   int? subStep;
   Rect position;
   dynamic tag;
   bool? inScrollZone;
+  AnchorDataType type;
 }
 
 typedef PositoinChangeHandler = void Function(AnchorData, bool);
@@ -23,11 +27,11 @@ class UserGuildanceAnchorInherit extends InheritedWidget {
       {Key? key,
       required Widget child,
       required this.anchorDatas,
-      required this.positionHandlers})
+      required this.onPositionChanged})
       : super(key: key, child: child);
 
   final List<AnchorData> anchorDatas;
-  final List<PositoinChangeHandler> positionHandlers;
+  final PositoinChangeHandler onPositionChanged;
 
   //定义一个便捷方法，方便子树中的widget获取共享数据
   static UserGuildanceAnchorInherit? of(BuildContext context) {
@@ -42,22 +46,8 @@ class UserGuildanceAnchorInherit extends InheritedWidget {
     return false;
   }
 
-  void addPositionListener(PositoinChangeHandler callback) {
-    if (!positionHandlers.contains(callback)) {
-      positionHandlers.add(callback);
-    }
-  }
-
-  void removePositionListener(PositoinChangeHandler callback) {
-    if (positionHandlers.contains(callback)) {
-      positionHandlers.remove(callback);
-    }
-  }
-
   void _notifyPositoinChanged(AnchorData data, bool isInsert) {
-    for (var handler in positionHandlers) {
-      handler(data, isInsert);
-    }
+    onPositionChanged(data, isInsert);
   }
 
   void report(int group, int step, int? subStep, Rect position, dynamic tag,
