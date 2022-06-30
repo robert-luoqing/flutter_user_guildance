@@ -1,36 +1,48 @@
 import 'package:flutter/material.dart';
 import '../flutter_user_guildance.dart';
+import 'user_guidance_condition.dart';
 
 class UserGuidanceController extends ValueNotifier<UserGuildanceModel> {
-  UserGuidanceController() : super(UserGuildanceModel(visible: false));
+  UserGuidanceController()
+      : super(UserGuildanceModel(visible: false, visibleWithCondition: false));
 
   UserGuidanceState? _userGuidanceState;
 
   set currentPage(String? page) {
     if (value.currentPage != page) {
-      value.currentPage = page;
-      notifyListeners();
+      updateValue(
+          currentPage: page,
+          data: value.data,
+          visible: value.visible,
+          ignoreNotify: false);
     }
   }
 
   void show({int group = 0, int index = 0, int subIndex = 0}) {
     var data = _getInitData(group, index, subIndex);
-    value.visible = data != null;
-    value.data = data;
-    notifyListeners();
+
+    updateValue(
+        currentPage: value.currentPage,
+        data: data,
+        visible: data != null,
+        ignoreNotify: false);
   }
 
   void next() {
     var data = _getNextData();
-    value.visible = data != null;
-    value.data = data;
-    notifyListeners();
+    updateValue(
+        currentPage: value.currentPage,
+        data: data,
+        visible: data != null,
+        ignoreNotify: false);
   }
 
   void hide() {
-    value.visible = false;
-    value.data = null;
-    notifyListeners();
+    updateValue(
+        currentPage: value.currentPage,
+        data: null,
+        visible: false,
+        ignoreNotify: false);
   }
 
   void attach(UserGuidanceState instance) {
@@ -42,6 +54,30 @@ class UserGuidanceController extends ValueNotifier<UserGuildanceModel> {
   void detach() {
     if (_userGuidanceState != null) {
       _userGuidanceState = null;
+    }
+  }
+
+  void updateValue({
+    required bool visible,
+    required AnchorData? data,
+    required String? currentPage,
+    required bool ignoreNotify,
+  }) {
+    value.visible = visible;
+    value.visibleWithCondition = checkIsMatchConditin(
+      visible: value.visible,
+      currentAnchorData: data,
+      currentPage: value.currentPage,
+      anchorDatas: _userGuidanceState?.anchorDatas ?? [],
+      anchorPageConditions: _userGuidanceState?.widget.anchorPageConditions,
+      anchorAppearConditions: _userGuidanceState?.widget.anchorAppearConditions,
+      anchorPositionConditions:
+          _userGuidanceState?.widget.anchorPositionConditions,
+    );
+    value.data = data;
+    value.currentPage = currentPage;
+    if (!ignoreNotify) {
+      notifyListeners();
     }
   }
 

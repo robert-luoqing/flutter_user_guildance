@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../flutter_user_guildance.dart';
+import 'user_guidance_condition.dart';
 
 typedef UserGuildanceTipBuilder = Widget? Function(
     BuildContext context, AnchorData? data);
@@ -55,7 +56,7 @@ class UserGuidance extends StatefulWidget {
       {Key? key,
       required this.controller,
       required this.child,
-      this.duration = const Duration(milliseconds: 250),
+      this.duration = const Duration(milliseconds: 200),
       this.tipBuilder,
       this.slotBuilder,
       this.opacity = 0.4,
@@ -122,6 +123,11 @@ class UserGuidanceState extends State<UserGuidance> {
         if (curAnchorData.step == data.step &&
             curAnchorData.subStep == data.subStep) {
           widget.controller.value.data = data;
+          widget.controller.updateValue(
+              currentPage: widget.controller.value.currentPage,
+              data: widget.controller.value.data,
+              visible: widget.controller.value.visible,
+              ignoreNotify: true);
         }
 
         WidgetsBinding.instance!.addPostFrameCallback(
@@ -146,98 +152,6 @@ class UserGuidanceState extends State<UserGuidance> {
     return null;
   }
 
-  bool determinePageCondition(AnchorData? anchorData, String? currentPage) {
-    if (anchorData != null && widget.anchorPageConditions != null) {
-      var groupBelongPage = widget.anchorPageConditions![anchorData.group];
-      if (groupBelongPage != null) {
-        if (groupBelongPage != currentPage) {
-          return false;
-        }
-      }
-    }
-
-    return true;
-  }
-
-  bool determineAppearCondition(AnchorData? anchorData) {
-    var anchorAppearConditions = widget.anchorAppearConditions;
-    if (anchorData != null &&
-        anchorAppearConditions != null &&
-        anchorAppearConditions.isNotEmpty) {
-      var group = anchorData.group;
-      var groupAppearCondition = anchorAppearConditions[group];
-      if (groupAppearCondition != null && groupAppearCondition.isNotEmpty) {
-        // Here is check the conditions
-        var reportDatas = anchorDatas;
-        for (var condition in groupAppearCondition) {
-          var matched = false;
-          for (var reportData in reportDatas) {
-            if (condition.step == reportData.step &&
-                condition.subStep == reportData.subStep) {
-              matched = true;
-              break;
-            }
-          }
-          if (matched == false) {
-            return false;
-          }
-        }
-      }
-    }
-
-    return true;
-  }
-
-  bool determinePositionCondition(AnchorData? anchorData) {
-    var anchorPositionConditions = widget.anchorPositionConditions;
-    if (anchorData != null &&
-        anchorPositionConditions != null &&
-        anchorPositionConditions.isNotEmpty) {
-      var group = anchorData.group;
-      var groupPositionCondition = anchorPositionConditions[group];
-      if (groupPositionCondition != null && groupPositionCondition.isNotEmpty) {
-        // Here is check the conditions
-        var reportDatas = anchorDatas;
-        for (var condition in groupPositionCondition) {
-          var matched = false;
-          for (var reportData in reportDatas) {
-            if (condition.step == reportData.step &&
-                condition.subStep == reportData.subStep) {
-              var minX = condition.minX ?? -10000000.0;
-              var minY = condition.minY ?? -10000000.0;
-              var maxX = condition.maxX ?? double.maxFinite;
-              var maxY = condition.maxY ?? double.maxFinite;
-
-              if (minX == -1 && minY == -1 && maxX == -1 && maxY == -1) {
-                if (reportData.inScrollZone ?? false) {
-                  matched = true;
-                } else {
-                  return false;
-                }
-              } else {
-                if (minX <= reportData.position.left &&
-                    maxX >= reportData.position.right &&
-                    minY <= reportData.position.top &&
-                    maxY >= reportData.position.bottom) {
-                  matched = true;
-                } else {
-                  return false;
-                }
-              }
-
-              break;
-            }
-          }
-          if (matched == false) {
-            return false;
-          }
-        }
-      }
-    }
-
-    return true;
-  }
-
   @override
   Widget build(BuildContext context) {
     return UserGuildanceAnchorInherit(
@@ -248,18 +162,7 @@ class UserGuidanceState extends State<UserGuidance> {
           ValueListenableBuilder<UserGuildanceModel>(
             valueListenable: widget.controller,
             builder: (_, value, child) {
-              var visible = value.visible;
-              var anchorData = value.data;
-              if (visible) {
-                visible = determinePageCondition(anchorData, value.currentPage);
-              }
-              if (visible) {
-                visible = determineAppearCondition(anchorData);
-              }
-
-              if (visible) {
-                visible = determinePositionCondition(anchorData);
-              }
+              var visible = value.visibleWithCondition;
 
               late Widget renderChild;
               if (visible) {
