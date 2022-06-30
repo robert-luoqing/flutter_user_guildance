@@ -27,11 +27,16 @@ class UserGuildanceAnchorInherit extends InheritedWidget {
       {Key? key,
       required Widget child,
       required this.anchorDatas,
-      required this.onPositionChanged})
+      required this.onPositionChanged,
+      required this.module,
+      required this.onUpReport})
       : super(key: key, child: child);
 
   final List<AnchorData> anchorDatas;
   final PositoinChangeHandler onPositionChanged;
+  final String? module;
+  final void Function(int group, int step, int? subStep, Rect position,
+      dynamic tag, bool? inScrollZone, String? anchorModule) onUpReport;
 
   //定义一个便捷方法，方便子树中的widget获取共享数据
   static UserGuildanceAnchorInherit? of(BuildContext context) {
@@ -51,33 +56,40 @@ class UserGuildanceAnchorInherit extends InheritedWidget {
   }
 
   void report(int group, int step, int? subStep, Rect position, dynamic tag,
-      bool? inScrollZone) {
-    var matched = false;
-    for (var item in anchorDatas) {
-      if (item.step == step && item.subStep == subStep && item.group == group) {
-        if (item.position.top != position.top ||
-            item.position.left != position.left ||
-            item.position.width != position.width ||
-            item.position.height != position.height) {
-          item.position = position;
-          item.inScrollZone = inScrollZone;
-          _notifyPositoinChanged(item, false);
+      bool? inScrollZone, String? anchorModule) {
+    if (module == anchorModule) {
+      var matched = false;
+      for (var item in anchorDatas) {
+        if (item.step == step &&
+            item.subStep == subStep &&
+            item.group == group) {
+          if (item.position.top != position.top ||
+              item.position.left != position.left ||
+              item.position.width != position.width ||
+              item.position.height != position.height) {
+            item.position = position;
+            item.inScrollZone = inScrollZone;
+            _notifyPositoinChanged(item, false);
+          }
+          matched = true;
+          break;
         }
-        matched = true;
-        break;
       }
-    }
 
-    if (!matched) {
-      var item = AnchorData(
-          group: group,
-          step: step,
-          subStep: subStep,
-          position: position,
-          tag: tag,
-          inScrollZone: inScrollZone);
-      anchorDatas.add(item);
-      _notifyPositoinChanged(item, true);
+      if (!matched) {
+        var item = AnchorData(
+            group: group,
+            step: step,
+            subStep: subStep,
+            position: position,
+            tag: tag,
+            inScrollZone: inScrollZone);
+        anchorDatas.add(item);
+        _notifyPositoinChanged(item, true);
+      }
+    } else {
+      onUpReport(
+          group, step, subStep, position, tag, inScrollZone, anchorModule);
     }
   }
 

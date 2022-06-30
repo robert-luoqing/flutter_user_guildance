@@ -18,7 +18,8 @@ class UserGuildanceAnchor extends SingleChildRenderObjectWidget {
       this.adjustRect,
       this.tag,
       this.group = 0,
-      this.needMonitorScroll = false})
+      this.needMonitorScroll = false,
+      this.module})
       : super(key: key, child: child);
 
   final int step;
@@ -33,6 +34,9 @@ class UserGuildanceAnchor extends SingleChildRenderObjectWidget {
 
   final AnchorAdjustRect? adjustRect;
 
+  /// If anchor have module, the UserGuidance only receive same module data
+  final String? module;
+
   @override
   RenderObject createRenderObject(BuildContext context) {
     var renderObj = _AnchorRenderObject(
@@ -42,7 +46,8 @@ class UserGuildanceAnchor extends SingleChildRenderObjectWidget {
         reportType: reportType,
         adjustRect: adjustRect,
         tag: tag,
-        group: group);
+        group: group,
+        module: module);
     renderObj.needMonitorScroll = needMonitorScroll;
     return renderObj;
   }
@@ -60,6 +65,7 @@ class UserGuildanceAnchor extends SingleChildRenderObjectWidget {
     _anchorRenderObject.adjustRect = adjustRect;
     _anchorRenderObject.group = group;
     _anchorRenderObject.needMonitorScroll = needMonitorScroll;
+    _anchorRenderObject.module = module;
     super.updateRenderObject(context, renderObject);
   }
 }
@@ -75,7 +81,8 @@ class _AnchorRenderObject extends RenderShiftedBox {
       this.reportType,
       this.adjustRect,
       required this.group,
-      this.tag})
+      this.tag,
+      this.module})
       : super(child);
 
   BuildContext context;
@@ -85,8 +92,8 @@ class _AnchorRenderObject extends RenderShiftedBox {
   dynamic tag;
   AnchorAdjustRect? adjustRect;
   int group;
-
   bool _needMonitorScroll = false;
+  String? module;
 
   /// It will effect performance. If the item is not in list view or scroll,
   /// Should keep it to false
@@ -126,7 +133,8 @@ class _AnchorRenderObject extends RenderShiftedBox {
       position = adjustRect!(position);
     }
     anchorObject ??= UserGuildanceAnchorInherit.of(context);
-    anchorObject?.report(group, step, subStep, position, tag, inScrollZone);
+    anchorObject?.report(
+        group, step, subStep, position, tag, inScrollZone, module);
   }
 
   RenderBox? findParentRenderObject(String name, bool returnPrev) {

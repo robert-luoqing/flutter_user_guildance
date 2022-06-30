@@ -17,3 +17,7 @@
 
 ## 2.0.3
 * Add customAnchors into UserGuidance
+
+## 2.0.4
+* Implement show and hide group separately.
+* Add nest UserGuildance funcationality

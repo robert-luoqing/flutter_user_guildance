@@ -3,46 +3,133 @@ import '../flutter_user_guildance.dart';
 import 'user_guidance_condition.dart';
 
 class UserGuidanceController extends ValueNotifier<UserGuildanceModel> {
-  UserGuidanceController()
-      : super(UserGuildanceModel(visible: false, visibleWithCondition: false));
+  UserGuidanceController() : super(UserGuildanceModel());
 
   UserGuidanceState? _userGuidanceState;
 
+  void determineCurrentGuidance() {
+    var current = value.current;
+    if (current != null) {
+      _updateUserGuidanceItemVisible(value.current);
+      if (value.current!.visibleWithCondition) {
+        notifyListeners();
+        return;
+      }
+      value.stack.add(current);
+      value.current = null;
+    }
+
+    for (var i = value.stack.length - 1; i >= 0; i--) {
+      var item = value.stack[i];
+      if (current != item) {
+        _updateUserGuidanceItemVisible(item);
+        if (item.visibleWithCondition) {
+          value.current = item;
+          value.stack.removeAt(i);
+          notifyListeners();
+          return;
+        }
+      }
+    }
+
+    // If current still null
+    if (value.current == null) {
+      Map<int, String> anchorPageConditions =
+          _userGuidanceState?.widget.anchorPageConditions ?? {};
+      for (var i = value.stack.length - 1; i >= 0; i--) {
+        var item = value.stack[i];
+        var isMatched = false;
+        // No page, the priority is going to should no page item
+        if (value.currentPage.isEmpty) {
+          if (!anchorPageConditions.containsKey(item.data.group)) {
+            isMatched = true;
+          }
+        } else {
+          if (anchorPageConditions[item.data.group] == value.currentPage) {
+            isMatched = true;
+          }
+        }
+
+        if (isMatched) {
+          value.current = item;
+          value.stack.removeAt(i);
+          notifyListeners();
+          return;
+        }
+      }
+    }
+
+    notifyListeners();
+  }
+
+  void removeMatchedGuidanceItem(int group) {
+    if (value.current != null) {
+      if (value.current!.data.group == group) {
+        value.current = null;
+      } else {
+        for (var i = value.stack.length - 1; i >= 0; i--) {
+          var item = value.stack[i];
+          if (item.data.group == group) {
+            value.stack.removeAt(i);
+            break;
+          }
+        }
+      }
+    }
+  }
+
   set currentPage(String? page) {
     if (value.currentPage != page) {
-      updateValue(
-          currentPage: page,
-          data: value.data,
-          visible: value.visible,
-          ignoreNotify: false);
+      value.currentPage = page ?? "";
+      determineCurrentGuidance();
     }
+  }
+
+  String get currentPage {
+    return value.currentPage;
   }
 
   void show({int group = 0, int index = 0, int subIndex = 0}) {
     var data = _getInitData(group, index, subIndex);
+    removeMatchedGuidanceItem(group);
 
-    updateValue(
-        currentPage: value.currentPage,
-        data: data,
-        visible: data != null,
-        ignoreNotify: false);
+    /// Put exist current to stack
+    if (value.current != null) {
+      value.stack.add(value.current!);
+    }
+    if (data != null) {
+      value.current =
+          UserGuildanceItemModel(visibleWithCondition: false, data: data);
+    }
+
+    determineCurrentGuidance();
   }
 
   void next() {
-    var data = _getNextData();
-    updateValue(
-        currentPage: value.currentPage,
-        data: data,
-        visible: data != null,
-        ignoreNotify: false);
+    if (value.current != null) {
+      var data = _getNextData(value.current!.data);
+      if (data == null) {
+        value.current = null;
+      } else {
+        value.current!.data = data;
+      }
+    }
+    if (value.current == null) {
+      determineCurrentGuidance();
+    } else {
+      notifyListeners();
+    }
   }
 
-  void hide() {
-    updateValue(
-        currentPage: value.currentPage,
-        data: null,
-        visible: false,
-        ignoreNotify: false);
+  /// group is null, it mean close all group
+  void hide({int? group}) {
+    if (group == null) {
+      value.current = null;
+      value.stack.clear();
+    } else {
+      removeMatchedGuidanceItem(group);
+    }
+    determineCurrentGuidance();
   }
 
   void attach(UserGuidanceState instance) {
@@ -57,27 +144,19 @@ class UserGuidanceController extends ValueNotifier<UserGuildanceModel> {
     }
   }
 
-  void updateValue({
-    required bool visible,
-    required AnchorData? data,
-    required String? currentPage,
-    required bool ignoreNotify,
-  }) {
-    value.visible = visible;
-    value.visibleWithCondition = checkIsMatchConditin(
-      visible: value.visible,
-      currentAnchorData: data,
-      currentPage: value.currentPage,
-      anchorDatas: _userGuidanceState?.anchorDatas ?? [],
-      anchorPageConditions: _userGuidanceState?.widget.anchorPageConditions,
-      anchorAppearConditions: _userGuidanceState?.widget.anchorAppearConditions,
-      anchorPositionConditions:
-          _userGuidanceState?.widget.anchorPositionConditions,
-    );
-    value.data = data;
-    value.currentPage = currentPage;
-    if (!ignoreNotify) {
-      notifyListeners();
+  void _updateUserGuidanceItemVisible(UserGuildanceItemModel? item) {
+    if (item != null) {
+      item.visibleWithCondition = checkIsMatchConditin(
+        visible: true,
+        currentAnchorData: item.data,
+        currentPage: value.currentPage,
+        anchorDatas: _userGuidanceState?.anchorDatas ?? [],
+        anchorPageConditions: _userGuidanceState?.widget.anchorPageConditions,
+        anchorAppearConditions:
+            _userGuidanceState?.widget.anchorAppearConditions,
+        anchorPositionConditions:
+            _userGuidanceState?.widget.anchorPositionConditions,
+      );
     }
   }
 
@@ -191,31 +270,26 @@ class UserGuidanceController extends ValueNotifier<UserGuildanceModel> {
     return minItem;
   }
 
-  AnchorData? _getNextData() {
-    var curData = value.data;
-    if (curData == null) {
-      throw "Not start";
-    } else {
-      AnchorData? minItem;
-      var groupAchors = getFullAnchorDatas(curData.group);
+  AnchorData? _getNextData(AnchorData curData) {
+    AnchorData? minItem;
+    var groupAchors = getFullAnchorDatas(curData.group);
 
-      for (var item in groupAchors) {
-        var compairResult = compair(
-            item.step, item.subStep ?? 0, curData.step, curData.subStep ?? 0);
-        if (compairResult == 1) {
-          if (minItem == null) {
+    for (var item in groupAchors) {
+      var compairResult = compair(
+          item.step, item.subStep ?? 0, curData.step, curData.subStep ?? 0);
+      if (compairResult == 1) {
+        if (minItem == null) {
+          minItem = item;
+        } else {
+          compairResult = compair(
+              item.step, item.subStep ?? 0, minItem.step, minItem.subStep ?? 0);
+          if (compairResult == -1) {
             minItem = item;
-          } else {
-            compairResult = compair(item.step, item.subStep ?? 0, minItem.step,
-                minItem.subStep ?? 0);
-            if (compairResult == -1) {
-              minItem = item;
-            }
           }
         }
       }
-
-      return minItem;
     }
+
+    return minItem;
   }
 }

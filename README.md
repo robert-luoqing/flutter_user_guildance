@@ -19,6 +19,7 @@ The widget is used to mark what widget need highlight. Using the widget wrap the
 | reportType | null: Just highlight itself, tab: It will find parent tab node to highlight it. |
 | adjustRect | If the hight rect is not accurate or not you want. The method will allow you to adjust the highlight rect. |
 | needMonitorScroll | If the item is in list view or scroll view, We need set the property to true to report the location when scrolling. It also report does the item is in list viewport (Visible area) |
+| module | It is used in nest guidance. If the parent have two and more parent UserGuildances. But you don't want to report the widget position to adjacent one. You can set module both in UserGuildanceAnchor and UserGuildance |
 
 ## UserGuildance
 The wiget is used to show highlight items. It make sure the widget show in full screen.  
@@ -38,6 +39,7 @@ Notice: If the conditions have been set, controller.show() may not work util the
 | anchorPositionConditions | All anchor location has meet the conditions. See: anchorPositionConditions |
 | anchorPageConditions | The group should meet page setting. The case is, if the anchor have report location but in invisble tab. In the case, We just simplify it. You can simple set the page condition to control it. See: anchorPositionConditions |
 | showMaskWhenMissCondition | If the user invoked controller.show, But condition is not meet. true: It will show progress, false: show nothing |
+| module | It is used in nest guidance. If the anchor have two and more parent UserGuildances. But you don't want to report the widget position to adjacent one. You can set module both in UserGuildanceAnchor and UserGuildance |
 
 ### anchorPositionConditions
 ```

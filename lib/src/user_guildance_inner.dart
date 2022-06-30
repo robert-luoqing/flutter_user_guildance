@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../flutter_user_guildance.dart';
-import 'user_guidance_condition.dart';
 
 typedef UserGuildanceTipBuilder = Widget? Function(
     BuildContext context, AnchorData? data);
@@ -65,7 +64,8 @@ class UserGuidance extends StatefulWidget {
       this.anchorPageConditions,
       this.showMaskWhenMissCondition = false,
       this.moveNextOnTap = true,
-      this.customAnchors})
+      this.customAnchors,
+      this.module})
       : super(key: key);
 
   final Widget child;
@@ -92,6 +92,9 @@ class UserGuidance extends StatefulWidget {
 
   final List<UserGuildanceCustomAnchor>? customAnchors;
 
+  /// If anchor have module, the UserGuidance only receive same module data
+  final String? module;
+
   @override
   UserGuidanceState createState() => UserGuidanceState();
 }
@@ -116,22 +119,34 @@ class UserGuidanceState extends State<UserGuidance> {
     super.didUpdateWidget(oldWidget);
   }
 
+  void onUpReport(int group, int step, int? subStep, Rect position, dynamic tag,
+      bool? inScrollZone, String? anchorModule) {
+    var anchorObject = UserGuildanceAnchorInherit.of(context);
+    anchorObject?.report(
+        group, step, subStep, position, tag, inScrollZone, anchorModule);
+  }
+
   void onPositionChanged(AnchorData data, bool isNew) {
-    var curAnchorData = widget.controller.value.data;
+    var curAnchorData = widget.controller.value.current?.data;
     if (curAnchorData != null) {
       if (curAnchorData.group == data.group) {
         if (curAnchorData.step == data.step &&
             curAnchorData.subStep == data.subStep) {
-          widget.controller.value.data = data;
-          widget.controller.updateValue(
-              currentPage: widget.controller.value.currentPage,
-              data: widget.controller.value.data,
-              visible: widget.controller.value.visible,
-              ignoreNotify: true);
+          widget.controller.value.current!.data = data;
         }
 
         WidgetsBinding.instance!.addPostFrameCallback(
           (timeStamp) {
+            widget.controller.determineCurrentGuidance();
+            widget.controller.notifyListeners();
+          },
+        );
+      }
+    } else {
+      if (widget.controller.value.stack.isNotEmpty) {
+        WidgetsBinding.instance!.addPostFrameCallback(
+          (timeStamp) {
+            widget.controller.determineCurrentGuidance();
             widget.controller.notifyListeners();
           },
         );
@@ -157,19 +172,19 @@ class UserGuidanceState extends State<UserGuidance> {
     return UserGuildanceAnchorInherit(
         anchorDatas: anchorDatas,
         onPositionChanged: onPositionChanged,
+        module: widget.module,
+        onUpReport: onUpReport,
         child: Stack(children: [
           widget.child,
           ValueListenableBuilder<UserGuildanceModel>(
             valueListenable: widget.controller,
             builder: (_, value, child) {
-              var visible = value.visibleWithCondition;
-
               late Widget renderChild;
-              if (visible) {
+              if (value.current?.visibleWithCondition ?? false) {
                 renderChild =
                     SizedBox(key: const ValueKey("switch_1"), child: child);
               } else {
-                if (value.visible && widget.showMaskWhenMissCondition) {
+                if (value.current != null && widget.showMaskWhenMissCondition) {
                   renderChild = SizedBox(
                       key: const ValueKey("switch_2"),
                       child: Container(
@@ -219,7 +234,7 @@ class UserGuidanceState extends State<UserGuidance> {
                           ValueListenableBuilder<UserGuildanceModel>(
                             valueListenable: widget.controller,
                             builder: (context, value, child) {
-                              final anchorData = value.data;
+                              final anchorData = value.current?.data;
                               var rect = Rect.fromLTWH(
                                   anchorData?.position.left ?? 0,
                                   anchorData?.position.top ?? 0,
@@ -252,7 +267,7 @@ class UserGuidanceState extends State<UserGuidance> {
                     child: ValueListenableBuilder<UserGuildanceModel>(
                       valueListenable: widget.controller,
                       builder: (context, value, child) {
-                        final anchorData = value.data;
+                        final anchorData = value.current?.data;
                         Widget? tipWidget;
                         if (widget.tipBuilder != null) {
                           tipWidget = widget.tipBuilder!(context, anchorData);
@@ -269,7 +284,7 @@ class UserGuidanceState extends State<UserGuidance> {
                           duration: widget.duration,
                           child: SizedBox(
                             key: ValueKey(
-                                "${value.data?.step}-${value.data?.subStep}"),
+                                "${value.current?.data.step}-${value.current?.data.subStep}"),
                             child: tipWidget,
                           ),
                         );

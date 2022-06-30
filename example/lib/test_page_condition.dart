@@ -52,7 +52,7 @@ class _TestPageConditionPageState extends State<TestPageConditionPage> {
                         onPressed: () async {
                           userGuidanceController.show(group: 1);
                         },
-                        child: const Text("Button")),
+                        child: const Text("Show user guidance")),
                   ),
                 ),
                 ElevatedButton(
@@ -60,7 +60,7 @@ class _TestPageConditionPageState extends State<TestPageConditionPage> {
                       for (var i = 0; i < 4; i++) {
                         userGuidanceController.currentPage = "Page1";
                         await Future.delayed(const Duration(seconds: 2));
-                        userGuidanceController.currentPage = "Page4";
+                        userGuidanceController.currentPage = "Page2";
                         await Future.delayed(const Duration(seconds: 2));
                         userGuidanceController.currentPage = "Page3";
                       }
