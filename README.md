@@ -51,7 +51,7 @@ anchorPositionConditions: {
   },
 ```
 
-### anchorPositionConditions
+### anchorPageConditions
 ```
 anchorPageConditions: const {1: "Page2"},
 
