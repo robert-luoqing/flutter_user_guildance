@@ -4,7 +4,7 @@ version: 2.0.5
 homepage: https://github.com/robert-luoqing/flutter_user_guildance
 
 environment:
-  sdk: ">=2.15.0 <3.0.0"
+  sdk: ">=2.15.0 <4.0.0"
   flutter: ">=1.17.0"
 
 dependencies:

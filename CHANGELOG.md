@@ -21,3 +21,6 @@
 ## 2.0.4
 * Implement show and hide group separately.
 * Add nest UserGuildance funcationality
+
+## 2.0.5
+* Match latest flutter version
