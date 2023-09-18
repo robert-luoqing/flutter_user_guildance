@@ -135,7 +135,7 @@ class UserGuidanceState extends State<UserGuidance> {
           widget.controller.value.current!.data = data;
         }
 
-        WidgetsBinding.instance!.addPostFrameCallback(
+        WidgetsBinding.instance.addPostFrameCallback(
           (timeStamp) {
             widget.controller.determineCurrentGuidance();
             widget.controller.notifyListeners();
@@ -144,7 +144,7 @@ class UserGuidanceState extends State<UserGuidance> {
       }
     } else {
       if (widget.controller.value.stack.isNotEmpty) {
-        WidgetsBinding.instance!.addPostFrameCallback(
+        WidgetsBinding.instance.addPostFrameCallback(
           (timeStamp) {
             widget.controller.determineCurrentGuidance();
             widget.controller.notifyListeners();
