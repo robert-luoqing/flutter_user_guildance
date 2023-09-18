@@ -101,7 +101,7 @@ class _AnchorRenderObject extends RenderShiftedBox {
     if (status != _needMonitorScroll) {
       _needMonitorScroll = status;
       if (status) {
-        var newScrollPosition = Scrollable.of(context)?.position;
+        var newScrollPosition = Scrollable.of(context).position;
         if (scrollPosition != newScrollPosition) {
           if (scrollPosition != null) {
             scrollPosition!.removeListener(monitorParentScroll);
@@ -139,7 +139,7 @@ class _AnchorRenderObject extends RenderShiftedBox {
 
   RenderBox? findParentRenderObject(String name, bool returnPrev) {
     var parentNode = parent;
-    AbstractNode? prevNode;
+    RenderObject? prevNode;
     while (parentNode != null) {
       var runtimeType = parentNode.runtimeType.toString();
       if (runtimeType == name) {
