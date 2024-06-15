@@ -1,10 +1,10 @@
 name: flutter_user_guildance
 description: Provide user guidance to user
-version: 2.0.6
+version: 2.0.7
 homepage: https://github.com/robert-luoqing/flutter_user_guildance
 
 environment:
-  sdk: ">=2.15.0 <4.0.0"
+  sdk: ">=2.17.0 <4.0.0"
   flutter: ">=1.17.0"
 
 dependencies:

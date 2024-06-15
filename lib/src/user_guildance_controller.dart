@@ -6,6 +6,7 @@ class UserGuidanceController extends ValueNotifier<UserGuildanceModel> {
   UserGuidanceController() : super(UserGuildanceModel());
 
   UserGuidanceState? _userGuidanceState;
+  bool _disposed = false;
 
   void determineCurrentGuidance() {
     var current = value.current;
@@ -162,7 +163,15 @@ class UserGuidanceController extends ValueNotifier<UserGuildanceModel> {
 
   @override
   void notifyListeners() {
-    super.notifyListeners();
+    if (!_disposed) {
+      super.notifyListeners();
+    }
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
   }
 
   /// return: 0: equal, 1: above, -1: less

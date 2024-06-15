@@ -27,3 +27,6 @@
 
 ## 2.0.6
 * Add bottom sheet support
+
+## 2.0.7
+* Add useModalAsMask to support bottom sheet and modal bottom sheet.

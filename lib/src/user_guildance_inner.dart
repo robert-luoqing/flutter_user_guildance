@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../flutter_user_guildance.dart';
@@ -65,7 +66,8 @@ class UserGuidance extends StatefulWidget {
       this.showMaskWhenMissCondition = false,
       this.moveNextOnTap = true,
       this.customAnchors,
-      this.module})
+      this.module,
+      this.useModalAsMask = false})
       : super(key: key);
 
   final Widget child;
@@ -95,6 +97,8 @@ class UserGuidance extends StatefulWidget {
   /// If anchor have module, the UserGuidance only receive same module data
   final String? module;
 
+  final bool useModalAsMask;
+
   @override
   UserGuidanceState createState() => UserGuidanceState();
 }
@@ -103,10 +107,14 @@ class UserGuidanceState extends State<UserGuidance> {
   /// Anchor data
   final List<AnchorData> anchorDatas = [];
 
+  /// Does the dialog is show up
+  BuildContext? _dialogContext;
+
   @override
   void initState() {
     super.initState();
     widget.controller.attach(this);
+    widget.controller.addListener(monitorGuidanceValueChange);
   }
 
   @override
@@ -114,6 +122,8 @@ class UserGuidanceState extends State<UserGuidance> {
     if (widget.controller != oldWidget.controller) {
       widget.controller.attach(this);
       oldWidget.controller.detach();
+      widget.controller.addListener(monitorGuidanceValueChange);
+      oldWidget.controller.removeListener(monitorGuidanceValueChange);
     }
 
     super.didUpdateWidget(oldWidget);
@@ -280,24 +290,73 @@ class UserGuidanceState extends State<UserGuidance> {
 
   @override
   Widget build(BuildContext context) {
-    return UserGuildanceAnchorInherit(
-        anchorDatas: anchorDatas,
-        onPositionChanged: onPositionChanged,
-        module: widget.module,
-        onUpReport: onUpReport,
-        child: Stack(children: [
-          widget.child,
-          Positioned.fill(
+    if (widget.useModalAsMask) {
+      return UserGuildanceAnchorInherit(
+          anchorDatas: anchorDatas,
+          onPositionChanged: onPositionChanged,
+          module: widget.module,
+          onUpReport: onUpReport,
+          child: Stack(children: [
+            widget.child,
+          ]));
+    } else {
+      return UserGuildanceAnchorInherit(
+          anchorDatas: anchorDatas,
+          onPositionChanged: onPositionChanged,
+          module: widget.module,
+          onUpReport: onUpReport,
+          child: Stack(children: [
+            widget.child,
+            Positioned.fill(
+                child: ValueListenableBuilder<UserGuildanceModel>(
+              valueListenable: widget.controller,
+              builder: valueListenableBuilder,
+              child: GestureDetector(
+                  onTap: _handlePressed,
+                  child: Stack(
+                    children: [buildBackgroundAndRect(), buildTipUI()],
+                  )),
+            ))
+          ]));
+    }
+  }
+
+  void monitorGuidanceValueChange() {
+    var step = widget.controller.value.current?.data.step;
+    if (kDebugMode) {
+      print("monitorGuidanceValueChange step: $step");
+    }
+    if (widget.useModalAsMask == false) {
+      return;
+    }
+
+    if (step != null && _dialogContext == null) {
+      showGeneralDialog(
+        context: context,
+        barrierColor: Colors.transparent,
+        barrierDismissible: false,
+        pageBuilder: (context, __, ___) {
+          _dialogContext = context;
+          return Container(
+              height: double.infinity,
+              width: double.infinity,
+              color: Colors.transparent,
               child: ValueListenableBuilder<UserGuildanceModel>(
-            valueListenable: widget.controller,
-            builder: valueListenableBuilder,
-            child: GestureDetector(
-                onTap: _handlePressed,
-                child: Stack(
-                  children: [buildBackgroundAndRect(), buildTipUI()],
-                )),
-          ))
-        ]));
+                valueListenable: widget.controller,
+                builder: valueListenableBuilder,
+                child: GestureDetector(
+                    onTap: _handlePressed,
+                    child: Stack(
+                      children: [buildBackgroundAndRect(), buildTipUI()],
+                    )),
+              ));
+        },
+      );
+    }
+    if (step == null && _dialogContext != null) {
+      Navigator.pop(_dialogContext!);
+      _dialogContext = null;
+    }
   }
 
   void _handlePressed() {
@@ -309,5 +368,6 @@ class UserGuidanceState extends State<UserGuidance> {
   @override
   void dispose() {
     super.dispose();
+    widget.controller.removeListener(monitorGuidanceValueChange);
   }
 }

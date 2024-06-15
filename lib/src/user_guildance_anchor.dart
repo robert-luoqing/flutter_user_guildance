@@ -163,12 +163,7 @@ class _AnchorRenderObject extends RenderShiftedBox {
   handleReportPosition() {
     try {
       if (reportType == null) {
-        var bottomSheetRenderObj = findParentRenderObject(
-            "_RenderBottomSheetLayoutWithSizeListener", true);
-        var positionObj =
-            localToGlobal(const Offset(0, 0), ancestor: bottomSheetRenderObj);
-
-        // var positionObj = localToGlobal(const Offset(0, 0));
+        var positionObj = localToGlobal(const Offset(0, 0));
 
         bool? inScrollZone;
         if (scrollPosition != null) {
