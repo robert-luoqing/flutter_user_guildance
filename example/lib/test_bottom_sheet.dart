@@ -14,17 +14,27 @@ class _TestBottomSheetPageState extends State<TestBottomSheetPage> {
   UserGuidanceController userGuidanceController = UserGuidanceController();
 
   @override
+  void initState() {
+    super.initState();
+    userGuidanceController.addListener(() {
+      var step = userGuidanceController.value.current?.data.step;
+      debugPrint("Step: $step, The guidance finished: " +
+          (step == null ? "true" : "false"));
+    });
+  }
+
+  @override
   void dispose() {
     userGuidanceController.dispose();
     super.dispose();
   }
 
   Widget buildBottomSheetUI() {
-    return SafeArea(
-        child: UserGuidance(
-            controller: userGuidanceController,
-            showMaskWhenMissCondition: true,
-            opacity: 0.5,
+    return UserGuidance(
+        controller: userGuidanceController,
+        showMaskWhenMissCondition: true,
+        opacity: 0.5,
+        child: SafeArea(
             child: Container(
                 color: Colors.red,
                 child: Padding(
@@ -35,12 +45,14 @@ class _TestBottomSheetPageState extends State<TestBottomSheetPage> {
                         children: [
                           UserGuildanceAnchor(
                               step: 0,
+                              tag: "Step 1",
                               child: Container(
                                 color: Colors.pink,
                                 child: Text("Step 1"),
                               )),
                           UserGuildanceAnchor(
                               step: 1,
+                              tag: "Step 2",
                               child: Container(
                                 color: Colors.pink,
                                 child: Text("Step 2"),
@@ -72,6 +84,11 @@ class _TestBottomSheetPageState extends State<TestBottomSheetPage> {
                           builder: (BuildContext context) {
                             return buildBottomSheetUI();
                           });
+                      WidgetsBinding.instance.addPostFrameCallback(
+                        (timeStamp) {
+                          // userGuidanceController.show();
+                        },
+                      );
                     },
                     child: const Text("Show Bottom sheet")),
               ),

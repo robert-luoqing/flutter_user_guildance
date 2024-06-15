@@ -167,6 +167,117 @@ class UserGuidanceState extends State<UserGuidance> {
     return null;
   }
 
+  Widget valueListenableBuilder(_, value, child) {
+    late Widget renderChild;
+    if (value.current?.visibleWithCondition ?? false) {
+      renderChild = SizedBox(key: const ValueKey("switch_1"), child: child);
+    } else {
+      if (value.current != null && widget.showMaskWhenMissCondition) {
+        renderChild = SizedBox(
+            key: const ValueKey("switch_2"),
+            child: Container(
+              color: Colors.black54,
+              child: const Center(
+                  child: CupertinoActivityIndicator(
+                radius: 15,
+              )),
+            ));
+      } else {
+        renderChild = const SizedBox(key: ValueKey("switch_2"));
+      }
+    }
+
+    return AnimatedSwitcher(
+      duration: widget.duration,
+      transitionBuilder: (child, animation) {
+        return FadeTransition(
+          opacity: animation,
+          child: child,
+        );
+      },
+      child: renderChild,
+    );
+  }
+
+  Widget buildBackgroundAndRect() {
+    return Positioned.fill(
+      child: ColorFiltered(
+        colorFilter: ColorFilter.mode(
+          Color.fromARGB((widget.opacity * 255.0).toInt(), 0, 0, 0),
+          BlendMode.srcOut,
+        ),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  backgroundBlendMode: BlendMode.dstOut,
+                ),
+              ),
+            ),
+            ValueListenableBuilder<UserGuildanceModel>(
+              valueListenable: widget.controller,
+              builder: (context, value, child) {
+                final anchorData = value.current?.data;
+                var rect = Rect.fromLTWH(
+                    anchorData?.position.left ?? 0,
+                    anchorData?.position.top ?? 0,
+                    anchorData?.position.width ?? 0,
+                    anchorData?.position.height ?? 0);
+                Decoration? decoration;
+                if (widget.slotBuilder != null) {
+                  decoration = widget.slotBuilder!(context, anchorData);
+                }
+                decoration ??= const BoxDecoration(color: Colors.white);
+
+                return AnimatedPositioned.fromRect(
+                  duration: widget.duration,
+                  rect: rect,
+                  child: AnimatedContainer(
+                    duration: widget.duration,
+                    decoration: decoration,
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildTipUI() {
+    return Material(
+      color: Colors.transparent,
+      child: ValueListenableBuilder<UserGuildanceModel>(
+        valueListenable: widget.controller,
+        builder: (context, value, child) {
+          final anchorData = value.current?.data;
+          Widget? tipWidget;
+          if (widget.tipBuilder != null) {
+            tipWidget = widget.tipBuilder!(context, anchorData);
+          } else {
+            if (anchorData?.tag != null) {
+              tipWidget = getDefaultTipWidget(context, anchorData);
+            }
+          }
+
+          tipWidget ??= Container();
+
+          return AnimatedSwitcher(
+            duration: widget.duration,
+            child: SizedBox(
+              key: ValueKey(
+                  "${value.current?.data.step}-${value.current?.data.subStep}"),
+              child: tipWidget,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return UserGuildanceAnchorInherit(
@@ -176,125 +287,16 @@ class UserGuidanceState extends State<UserGuidance> {
         onUpReport: onUpReport,
         child: Stack(children: [
           widget.child,
-          ValueListenableBuilder<UserGuildanceModel>(
+          Positioned.fill(
+              child: ValueListenableBuilder<UserGuildanceModel>(
             valueListenable: widget.controller,
-            builder: (_, value, child) {
-              late Widget renderChild;
-              if (value.current?.visibleWithCondition ?? false) {
-                renderChild =
-                    SizedBox(key: const ValueKey("switch_1"), child: child);
-              } else {
-                if (value.current != null && widget.showMaskWhenMissCondition) {
-                  renderChild = SizedBox(
-                      key: const ValueKey("switch_2"),
-                      child: Container(
-                        color: Colors.black54,
-                        child: const Center(
-                            child: CupertinoActivityIndicator(
-                          radius: 15,
-                        )),
-                      ));
-                } else {
-                  renderChild = const SizedBox(key: ValueKey("switch_2"));
-                }
-              }
-
-              return AnimatedSwitcher(
-                duration: widget.duration,
-                transitionBuilder: (child, animation) {
-                  return FadeTransition(
-                    opacity: animation,
-                    child: child,
-                  );
-                },
-                child: renderChild,
-              );
-            },
+            builder: valueListenableBuilder,
             child: GestureDetector(
-              onTap: _handlePressed,
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: ColorFiltered(
-                      colorFilter: ColorFilter.mode(
-                        Color.fromARGB(
-                            (widget.opacity * 255.0).toInt(), 0, 0, 0),
-                        BlendMode.srcOut,
-                      ),
-                      child: Stack(
-                        children: [
-                          Positioned.fill(
-                            child: Container(
-                              decoration: const BoxDecoration(
-                                color: Colors.white,
-                                backgroundBlendMode: BlendMode.dstOut,
-                              ),
-                            ),
-                          ),
-                          ValueListenableBuilder<UserGuildanceModel>(
-                            valueListenable: widget.controller,
-                            builder: (context, value, child) {
-                              final anchorData = value.current?.data;
-                              var rect = Rect.fromLTWH(
-                                  anchorData?.position.left ?? 0,
-                                  anchorData?.position.top ?? 0,
-                                  anchorData?.position.width ?? 0,
-                                  anchorData?.position.height ?? 0);
-                              Decoration? decoration;
-                              if (widget.slotBuilder != null) {
-                                decoration =
-                                    widget.slotBuilder!(context, anchorData);
-                              }
-                              decoration ??=
-                                  const BoxDecoration(color: Colors.white);
-
-                              return AnimatedPositioned.fromRect(
-                                duration: widget.duration,
-                                rect: rect,
-                                child: AnimatedContainer(
-                                  duration: widget.duration,
-                                  decoration: decoration,
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Material(
-                    color: Colors.transparent,
-                    child: ValueListenableBuilder<UserGuildanceModel>(
-                      valueListenable: widget.controller,
-                      builder: (context, value, child) {
-                        final anchorData = value.current?.data;
-                        Widget? tipWidget;
-                        if (widget.tipBuilder != null) {
-                          tipWidget = widget.tipBuilder!(context, anchorData);
-                        } else {
-                          if (anchorData?.tag != null) {
-                            tipWidget =
-                                getDefaultTipWidget(context, anchorData);
-                          }
-                        }
-
-                        tipWidget ??= Container();
-
-                        return AnimatedSwitcher(
-                          duration: widget.duration,
-                          child: SizedBox(
-                            key: ValueKey(
-                                "${value.current?.data.step}-${value.current?.data.subStep}"),
-                            child: tipWidget,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          )
+                onTap: _handlePressed,
+                child: Stack(
+                  children: [buildBackgroundAndRect(), buildTipUI()],
+                )),
+          ))
         ]));
   }
 

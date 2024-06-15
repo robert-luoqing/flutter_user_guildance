@@ -43,9 +43,16 @@ class _TestComplexConditionPageState extends State<TestComplexConditionPage> {
                   child: ElevatedButton(
                       onPressed: () async {
                         userGuidanceController.show(group: 1);
-                        // userGuidanceController.show(group: 2);
                       },
-                      child: const Text("Show all group guidance")),
+                      child: const Text("Show  group 1 guidance")),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 0),
+                  child: ElevatedButton(
+                      onPressed: () async {
+                        userGuidanceController.show(group: 2);
+                      },
+                      child: const Text("Show  group 2 guidance")),
                 ),
                 ElevatedButton(
                     onPressed: () async {

@@ -24,3 +24,6 @@
 
 ## 2.0.5
 * Match latest flutter version
+
+## 2.0.6
+* Add bottom sheet support
