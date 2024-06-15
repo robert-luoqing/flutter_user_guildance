@@ -26,6 +26,9 @@ class _TestPageConditionPageState extends State<TestPageConditionPage> {
       anchorPageConditions: const {1: "Page2"},
       opacity: 0.5,
       child: Scaffold(
+          appBar: AppBar(
+            title: const Text("Test Page Condition"),
+          ),
           floatingActionButton: UserGuildanceAnchor(
               group: 1,
               step: 1,

@@ -31,47 +31,62 @@ class _TestComplexConditionPageState extends State<TestComplexConditionPage> {
       },
       opacity: 0.5,
       child: Scaffold(
+          appBar: AppBar(
+            title: const Text("Test Complex Condition"),
+          ),
           body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 0),
-              child: ElevatedButton(
-                  onPressed: () async {
-                    userGuidanceController.show(group: 1);
-                    userGuidanceController.show(group: 2);
-                  },
-                  child: const Text("Show all group guidance")),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 0),
+                  child: ElevatedButton(
+                      onPressed: () async {
+                        userGuidanceController.show(group: 1);
+                        // userGuidanceController.show(group: 2);
+                      },
+                      child: const Text("Show all group guidance")),
+                ),
+                ElevatedButton(
+                    onPressed: () async {
+                      userGuidanceController.currentPage = "Page1";
+                      setState(() {});
+                    },
+                    child: const Text("Change current page1 (Group 1)")),
+                ElevatedButton(
+                    onPressed: () async {
+                      userGuidanceController.currentPage = "Page2";
+                      setState(() {});
+                    },
+                    child: const Text("Change current page2 (Group 2)")),
+                ElevatedButton(
+                    onPressed: () async {
+                      userGuidanceController.currentPage = "Page3";
+                      setState(() {});
+                    },
+                    child: const Text("Change current page3 (No Group)")),
+                const UserGuildanceAnchor(
+                  group: 1,
+                  step: 1,
+                  tag: "Group1",
+                  child: Text("Group1"),
+                ),
+                const UserGuildanceAnchor(
+                  group: 1,
+                  step: 2,
+                  tag: "Group1",
+                  child: Text("Group1 step 2"),
+                ),
+                const UserGuildanceAnchor(
+                  group: 2,
+                  step: 1,
+                  tag: "Group2",
+                  child: Text("Group2"),
+                ),
+                Text("Current group: ${userGuidanceController.currentPage}")
+              ]),
             ),
-            ElevatedButton(
-                onPressed: () async {
-                  userGuidanceController.currentPage = "Page1";
-                  setState(() {});
-                  await Future.delayed(const Duration(seconds: 4));
-                  userGuidanceController.currentPage = "Page2";
-                  setState(() {});
-                  await Future.delayed(const Duration(seconds: 4));
-                  userGuidanceController.currentPage = "Page3";
-                  setState(() {});
-                },
-                child: const Text("Change current page")),
-            const UserGuildanceAnchor(
-              group: 1,
-              step: 1,
-              tag: "Group1",
-              child: Text("Group1"),
-            ),
-            const UserGuildanceAnchor(
-              group: 2,
-              step: 1,
-              tag: "Group2",
-              child: Text("Group2"),
-            ),
-            Text("Current group: ${userGuidanceController.currentPage}")
-          ]),
-        ),
-      )),
+          )),
     );
   }
 }

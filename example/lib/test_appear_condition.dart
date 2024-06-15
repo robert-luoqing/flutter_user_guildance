@@ -31,50 +31,54 @@ class _TestAppearConditionPageState extends State<TestAppearConditionPage> {
       },
       opacity: 0.5,
       child: Scaffold(
+          appBar: AppBar(
+            title: const Text("Test Appear Condition"),
+          ),
           body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 0),
-              child: UserGuildanceAnchor(
-                group: 1,
-                step: 2,
-                tag: "Start press the button",
-                adjustRect: (rect) {
-                  return Rect.fromLTWH(rect.left, rect.top + 5.0, rect.width,
-                      rect.height - 10.0);
-                },
-                child: ElevatedButton(
-                    onPressed: () async {
-                      userGuidanceController.show(group: 1);
-                    },
-                    child: const Text("Button")),
-              ),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 0),
+                      child: UserGuildanceAnchor(
+                        group: 1,
+                        step: 2,
+                        tag: "Start press the button",
+                        adjustRect: (rect) {
+                          return Rect.fromLTWH(rect.left, rect.top + 5.0,
+                              rect.width, rect.height - 10.0);
+                        },
+                        child: ElevatedButton(
+                            onPressed: () async {
+                              userGuidanceController.show(group: 1);
+                            },
+                            child: const Text("Button")),
+                      ),
+                    ),
+                    ElevatedButton(
+                        onPressed: () async {
+                          showStep3 = true;
+                          setState(() {});
+                        },
+                        child: const Text("Show Step 3")),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 0),
+                      child: showStep3
+                          ? UserGuildanceAnchor(
+                              group: 1,
+                              step: 3,
+                              tag: "Step 3 button",
+                              child: ElevatedButton(
+                                  onPressed: () async {},
+                                  child: const Text("Step 3 button")),
+                            )
+                          : Container(),
+                    ),
+                  ]),
             ),
-            ElevatedButton(
-                onPressed: () async {
-                  showStep3 = true;
-                  setState(() {});
-                },
-                child: const Text("Show Step 3")),
-            Padding(
-              padding: const EdgeInsets.only(top: 0),
-              child: showStep3
-                  ? UserGuildanceAnchor(
-                      group: 1,
-                      step: 3,
-                      tag: "Step 3 button",
-                      child: ElevatedButton(
-                          onPressed: () async {},
-                          child: const Text("Step 3 button")),
-                    )
-                  : Container(),
-            ),
-          ]),
-        ),
-      )),
+          )),
     );
   }
 }

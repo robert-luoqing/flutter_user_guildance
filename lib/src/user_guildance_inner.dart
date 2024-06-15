@@ -80,11 +80,11 @@ class UserGuidance extends StatefulWidget {
   final bool moveNextOnTap;
 
   /// If [anchorAppearConditions] or [anchorPositionConditions] is not null,
-  /// and controller.show invoked, The user guildance will not show up.
+  /// and controller.show invoked, The user guidance will not show up.
   /// Exception meet the conditions. Before meeting condition,
   /// if [showMaskWhenMissCondition] is true, The mask will show up.
-  /// Otherwise the user guildance will keep hidden
-  /// The user guildance will appear when the group condition meet
+  /// Otherwise the user guidance will keep hidden
+  /// The user guidance will appear when the group condition meet
   final Map<int, List<UserGuidanceAppearCondition>>? anchorAppearConditions;
   final Map<int, List<UserGuidancePositionCondition>>? anchorPositionConditions;
   final Map<int, String>? anchorPageConditions;

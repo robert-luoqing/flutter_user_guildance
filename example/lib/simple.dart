@@ -19,6 +19,9 @@ class _SimplePageState extends State<SimplePage> {
       controller: userGuidanceController,
       opacity: 0.5,
       child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Simple"),
+        ),
         floatingActionButton: UserGuildanceAnchor(
             step: 1,
             tag: "This is tab Floating button.",

@@ -56,42 +56,46 @@ class _TestPositionConditionPageState extends State<TestPositionConditionPage> {
       ],
       opacity: 0.5,
       child: Scaffold(
+          appBar: AppBar(
+            title: const Text("Test Position Condition"),
+          ),
           body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 0),
-              child: UserGuildanceAnchor(
-                step: 3,
-                tag: "Start press the button",
-                child: ElevatedButton(
-                    onPressed: () async {
-                      userGuidanceController.show(group: 0);
-                    },
-                    child: const Text("Button")),
-              ),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 0),
+                      child: UserGuildanceAnchor(
+                        step: 3,
+                        tag: "Start press the button",
+                        child: ElevatedButton(
+                            onPressed: () async {
+                              userGuidanceController.show(group: 0);
+                            },
+                            child: const Text("Button")),
+                      ),
+                    ),
+                    Expanded(
+                        child: ListView.builder(
+                      itemBuilder: ((context, index) {
+                        Widget item =
+                            SizedBox(height: 40, child: Text("Item - $index"));
+                        if (index == 33) {
+                          item = UserGuildanceAnchor(
+                              needMonitorScroll: true,
+                              step: 2,
+                              tag: "Item - $index",
+                              child: item);
+                        }
+                        return item;
+                      }),
+                      itemCount: 1000,
+                    ))
+                  ]),
             ),
-            Expanded(
-                child: ListView.builder(
-              itemBuilder: ((context, index) {
-                Widget item =
-                    SizedBox(height: 40, child: Text("Item - $index"));
-                if (index == 33) {
-                  item = UserGuildanceAnchor(
-                      needMonitorScroll: true,
-                      step: 2,
-                      tag: "Item - $index",
-                      child: item);
-                }
-                return item;
-              }),
-              itemCount: 1000,
-            ))
-          ]),
-        ),
-      )),
+          )),
     );
   }
 }
